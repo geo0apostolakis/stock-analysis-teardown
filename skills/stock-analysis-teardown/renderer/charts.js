@@ -78,8 +78,13 @@ function moneyAxisFmt(sym, nums) {
 function moneyLabelFmt(sym, nums) {
   // Labels share the chart's scale; values under 1,000 stay in $M so small steps stay readable.
   const { div, suf, peak } = moneyScale(nums);
-  const big = peak / div;
-  const d = div === 1 ? 0 : big >= 100 ? 0 : big >= 10 ? 1 : 2;
+  // Fewest decimals (0 to 2) that lose nothing against two decimals, the precision the
+  // bullets print: $7.24B stays $7.24B so chart and text agree, while 14, 8 and 25 print as
+  // $14B, $8B, $25B instead of $14.00B.
+  const cap = div === 1 ? 0 : peak / div >= 100 ? 1 : 2;
+  const big = nums.filter((v) => Math.abs(v) >= 1000 && div > 1).map((v) => Math.abs(v) / div);
+  let d = 0;
+  while (d < cap && big.some((x) => Math.abs(Number(x.toFixed(d)) - Number(x.toFixed(cap))) > 1e-9)) d += 1;
   return (v) => {
     if (v === null || v === undefined || Number.isNaN(v)) return '';
     const a = Math.abs(v), s = v < 0 ? MINUS : '';
@@ -355,7 +360,7 @@ function optWaterfall(ch, w, h) {
   // A value label sits at the end the bar moves toward: above a rise or a positive total,
   // below a fall or a negative total. A label for -$703M parked above the zero line reads
   // as if the bar went up.
-  const fmtLab = ch.unit === 'money_m' ? moneyLabelFmt(ch.sym || '$', signed.concat(ends)) : (v) => fmtNum(v, ch.unit, ch.sym);
+  const fmtLab = ch.unit === 'money_m' ? moneyLabelFmt(ch.sym || '$', signed) : (v) => fmtNum(v, ch.unit, ch.sym);
   o.series.push({ type: 'scatter', symbolSize: 0, silent: true, z: 10,
     data: spans.map((sp, j) => ({ value: [j, sp.neg ? sp.lo : sp.hi],
       label: { position: sp.neg ? 'bottom' : 'top' } })),
