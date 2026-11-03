@@ -193,8 +193,11 @@ def resolve_chart(ch, ctx, where):
     elif kind == "waterfall":
         steps = []
         for s in ch.get("steps", []):
-            steps.append({"label": ctx.text(s["label"], where), "value": ctx.number(s.get("value"), where),
-                          "total": bool(s.get("total"))})
+            step = {"label": ctx.text(s["label"], where), "value": ctx.number(s.get("value"), where),
+                    "total": bool(s.get("total"))}
+            if s.get("tone") in ("good", "bad"):
+                step["tone"] = s["tone"]
+            steps.append(step)
         ch["steps"] = steps
         waterfall_checks(ch, ctx, where)
     elif kind == "segmented-bar":
@@ -274,6 +277,12 @@ def waterfall_checks(ch, ctx, where):
             f"falls to {low:,.1f} after '{at}'. That draws a balance below zero that never existed. "
             f"Put the inflows (operating cash flow, financing, proceeds) before the outflows (capex, "
             f"acquisitions, repayments)")
+    if len(totals) >= 2 and totals[0] >= 0 and totals[-1] < 0:
+        ctx.errors.append(
+            f"{where}: waterfall '{title}' starts at or above zero and ends below it, so one bar dives "
+            f"through the zero line and the end shows as a negative bar. For sources against uses or a "
+            f"funding gap, stack the sources up to the need instead: start at the first source, add the "
+            f"others, add the gap as a step with \"tone\": \"bad\", and end on the need as a total with its value")
     span = max(abs(v) for v in path) or 1.0
     for s in steps:
         if not s["total"] and s["value"] is not None and 0 < abs(s["value"]) < 0.01 * span:

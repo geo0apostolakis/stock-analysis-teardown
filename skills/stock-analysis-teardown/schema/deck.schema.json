@@ -316,7 +316,7 @@
         },
         "steps": {
           "type": "array",
-          "description": "waterfall steps {label, value, total?}"
+          "description": "waterfall steps {label, value, total?, tone?}; tone good or bad overrides the colour the sign gives"
         },
         "points": {
           "type": "array",

@@ -54,8 +54,43 @@ function fmtNum(v, unit = 'num', sym = '$', compact = false) {
   }
 }
 
+function moneyScale(nums) {
+  // One scale ($M, $B or $T) and one decimal count for a whole chart, so ticks and labels
+  // never mix "$25B" with "$5.0B" or "$14.0B" with "$8B".
+  const peak = Math.max(0, ...nums.map((v) => Math.abs(v)));
+  if (peak >= 1e6) return { div: 1e6, suf: 'T', peak };
+  if (peak >= 1000) return { div: 1000, suf: 'B', peak };
+  return { div: 1, suf: 'M', peak };
+}
+
+function moneyAxisFmt(sym, nums) {
+  const { div, suf } = moneyScale(nums);
+  const lo = Math.min(0, ...nums), hi = Math.max(0, ...nums);
+  const step = (hi - lo) / div / 4;
+  const d = step >= 2 || step === 0 ? 0 : step >= 0.2 ? 1 : 2;
+  return (v) => {
+    if (v === 0) return `${sym}0`;
+    const a = Math.abs(v) / div;
+    return `${v < 0 ? MINUS : ''}${sym}${a.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}${suf}`;
+  };
+}
+
+function moneyLabelFmt(sym, nums) {
+  // Labels share the chart's scale; values under 1,000 stay in $M so small steps stay readable.
+  const { div, suf, peak } = moneyScale(nums);
+  const big = peak / div;
+  const d = div === 1 ? 0 : big >= 100 ? 0 : big >= 10 ? 1 : 2;
+  return (v) => {
+    if (v === null || v === undefined || Number.isNaN(v)) return '';
+    const a = Math.abs(v), s = v < 0 ? MINUS : '';
+    if (div > 1 && a < 1000) return `${s}${sym}${a.toLocaleString('en-US', { maximumFractionDigits: 0 })}M`;
+    return `${s}${sym}${(a / div).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })}${suf}`;
+  };
+}
+
 function axisFmt(unit, sym, values) {
   const nums = (values || []).filter((v) => typeof v === 'number' && !Number.isNaN(v));
+  if (unit === 'money_m' && nums.length) return moneyAxisFmt(sym, nums);
   if (!nums.length || !['x', 'ps', 'num', 'pct', 'ratio'].includes(unit)) return (v) => fmtNum(v, unit, sym, true);
   const k = unit === 'pct' ? 100 : 1;
   const step = ((Math.max(...nums) - Math.min(...nums)) * k) / 4;
@@ -272,13 +307,16 @@ function optWaterfall(ch, w, h) {
     if (s.total) {
       const v = s.value !== null && s.value !== undefined ? s.value : running;
       running = v;
-      spans.push({ lo: Math.min(0, v), hi: Math.max(0, v), kind: 'total' });
+      spans.push({ lo: Math.min(0, v), hi: Math.max(0, v), kind: 'total', neg: v < 0 });
       signed.push(v);
     } else {
       const v = s.value || 0;
       const start = running;
       running += v;
-      spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind: v >= 0 ? 'up' : 'down' });
+      // tone lets a step that adds to the bar still read as bad (a funding gap) or one that
+      // subtracts read as good (a cost saving); without it the sign decides the colour
+      const kind = s.tone === 'bad' ? 'down' : s.tone === 'good' ? 'up' : v >= 0 ? 'up' : 'down';
+      spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind, neg: v < 0 });
       signed.push(v);
     }
   });
@@ -299,8 +337,12 @@ function optWaterfall(ch, w, h) {
     if (sp.hi === sp.lo) { basePos[j] = sp.hi; pos[j] = 0; }
   });
   const o = base(ch, w, h);
+  // room above the tallest bar and below the deepest one for the value labels
+  o.grid.top = 34;
+  if (spans.some((sp) => sp.neg && sp.lo < 0)) o.grid.bottom = 30;
   o.xAxis = catAxis(cats, { axisLabel: { color: THEME.ink2, fontSize: 13, interval: 0, width: Math.max(80, (w - 80) / cats.length - 8), overflow: 'break', fontFamily: THEME.font } });
-  o.yAxis = valueAxis(ch.unit, ch.sym);
+  const ends = spans.flatMap((sp) => [sp.lo, sp.hi]);
+  o.yAxis = valueAxis(ch.unit, ch.sym, {}, ends);
   const color = { total: THEME.roles.primary, up: THEME.roles.positive, down: THEME.roles.negative };
   o.series = [
     { type: 'bar', stack: 'w', data: basePos, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
@@ -310,10 +352,15 @@ function optWaterfall(ch, w, h) {
     parts[k].forEach((arr, side) => o.series.push({ type: 'bar', stack: 'w', data: arr, barMaxWidth: 40,
       itemStyle: { color: color[k], borderRadius: side === 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } }));
   });
-  // value labels sit just above the top of each bar
-  o.series.push({ type: 'scatter', data: spans.map((sp, j) => [j, sp.hi]), symbolSize: 0, silent: true, z: 10,
-    label: { show: true, position: 'top', distance: 6, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
-      formatter: (p) => fmtNum(signed[p.dataIndex], ch.unit, ch.sym) } });
+  // A value label sits at the end the bar moves toward: above a rise or a positive total,
+  // below a fall or a negative total. A label for -$703M parked above the zero line reads
+  // as if the bar went up.
+  const fmtLab = ch.unit === 'money_m' ? moneyLabelFmt(ch.sym || '$', signed.concat(ends)) : (v) => fmtNum(v, ch.unit, ch.sym);
+  o.series.push({ type: 'scatter', symbolSize: 0, silent: true, z: 10,
+    data: spans.map((sp, j) => ({ value: [j, sp.neg ? sp.lo : sp.hi],
+      label: { position: sp.neg ? 'bottom' : 'top' } })),
+    label: { show: true, distance: 6, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
+      formatter: (p) => fmtLab(signed[p.dataIndex]) } });
   return o;
 }
 
