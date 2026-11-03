@@ -12,8 +12,13 @@ list repeats its last value). Discounting is end of year. Terminal value is Gord
 
 Cost of equity = risk-free + adjusted beta x equity risk premium.
 Adjusted beta = 0.67 x raw beta + 0.33 (Blume), raw beta from fetch_market.py.
-Cost of debt = last fiscal year interest expense / average total debt, kept between
-risk-free and risk-free + 6%. Weights use market cap and latest total debt.
+Cost of debt is what the company would pay to borrow today. Set `cost_of_debt` in the inputs
+to the rate on its newest borrowing (or the straight-debt yield of its converts, since a
+low coupon is paid for with an equity option). Without it, the fallback is last fiscal year
+interest expense / average total debt, capped at risk-free + 6%. If that falls below the
+risk-free rate (zero-coupon converts, capitalized interest, debt raised late in the year),
+the run stops: no company borrows below the government, so the number is an artifact.
+Weights use market cap and latest total debt.
 """
 import argparse
 import json
@@ -62,6 +67,9 @@ def init(run_dir):
         "eps_key": "eps@TTM", "eps_key_reason": "EPS behind the peer P/E bar. If the TTM holds a one-off gain or loss, "
                   "record a clean EPS with metrics.py add and put its key here.",
         "terminal_growth": tg, "terminal_growth_reason": "Long-run nominal growth near GDP.",
+        "cost_of_debt": None, "cost_of_debt_reason": "Pre-tax rate the company would pay to borrow today: the rate on "
+                        "its newest loan or bond, or the straight-debt yield of its converts. Leave null to use "
+                        "historical interest / debt, which stops the run if it is below the risk-free rate.",
         "tax_rate": 0.21,
         "scenarios": {
             "bear": {"probability": 0.25, "revenue_growth": [round(x, 4) for x in fade(g0 * 0.4, tg)],
@@ -140,8 +148,24 @@ def run(run_dir):
     ie = V(m, f"interest_expense@{last}")
     prev = meta["display_periods"][-2] if len(meta["display_periods"]) > 1 else last
     avg_debt = ((V(m, f"total_debt@{last}") or 0) + (V(m, f"total_debt@{prev}") or 0)) / 2
-    kd = (ie / avg_debt) if ie and avg_debt else rf + 0.015
-    kd = min(max(kd, rf), rf + 0.06)
+    kd_hist = (ie / avg_debt) if ie and avg_debt else None
+    kd_set = inp.get("cost_of_debt")
+    if kd_set is not None:
+        kd, kd_basis = float(kd_set), "set"
+        if kd < rf:
+            sys.exit(f"cost_of_debt {kd:.3f} is below the {rf:.3f} risk-free rate; no company borrows below "
+                     f"the government. Use the rate on its newest borrowing")
+    elif kd_hist is not None and kd_hist < rf:
+        sys.exit(f"historical interest / average debt is {kd_hist:.3f}, below the {rf:.3f} risk-free rate. "
+                 f"That is an artifact of low-coupon converts, capitalized interest or debt raised late in the "
+                 f"year, not what the company pays to borrow. Set cost_of_debt in valuation_inputs.json to the "
+                 f"rate on its newest borrowing (or the straight-debt yield of its converts) and say why in "
+                 f"cost_of_debt_reason")
+    else:
+        kd = min(kd_hist, rf + 0.06) if kd_hist is not None else rf + 0.015
+        kd_basis = "historical" if kd_hist is not None else "default"
+        log(f"cost of debt {kd:.3f} from {kd_basis} interest / debt; set cost_of_debt if the company "
+            f"borrows at a different rate today")
     t = inp.get("tax_rate", 0.21)
     # convertible preferred, or other shares that convert at no cost, counted as common (millions of shares)
     extra = float(inp.get("extra_shares_m") or 0.0)
@@ -266,7 +290,7 @@ def run(run_dir):
 
     out = {
         "as_of": meta.get("price_time"), "price": price, "price_currency": meta.get("price_currency"),
-        "wacc": {"value": wacc, "cost_of_equity": ke, "cost_of_debt_pre_tax": kd, "risk_free": rf, "beta_raw": raw_beta,
+        "wacc": {"value": wacc, "cost_of_equity": ke, "cost_of_debt_pre_tax": kd, "cost_of_debt_basis": kd_basis, "cost_of_debt_historical": kd_hist, "risk_free": rf, "beta_raw": raw_beta,
                  "beta_used": beta, "erp": erp, "tax_rate": t, "equity_weight": E / (E + D) if E + D else None},
         "terminal_growth": g, "start_revenue": rev0, "net_debt": net_debt, "shares": shares,
         "scenarios": scen_out, "probability_weighted_per_share": weighted,

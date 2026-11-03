@@ -39,6 +39,7 @@ Combine sections when the company is simple (2.7 and 2.8 often fit one slide; 2.
 
 ## Watch for
 
+- Funding for a build or a deal. Record each source by status as its own metric: committed (cash, signed facilities, received prepayments), targeted (announced plans, facilities in talks) and no named source. Headlines give the amount not yet committed first; "no named source" is the smaller number and only holds if the targeted money closes, so say that next to it.
 - A fiscal year label that does not match the calendar (Marvell's FY2026 ended in January 2026). Say it once in a slide note or kicker where it matters.
 - Growth rates on tiny or negative bases. Say "turned positive" instead of printing a 900% growth rate.
 - Mixing GAAP and non-GAAP numbers in one chart.

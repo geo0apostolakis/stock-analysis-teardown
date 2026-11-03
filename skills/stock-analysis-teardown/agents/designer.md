@@ -30,6 +30,7 @@ Open `build/shots/contact-sheet.png` first and judge the rhythm. Then open every
 - Does the chart say something false even though every number is right? A cash or debt bridge that dips below zero, a title unit that disagrees with the axis, a value label floating over a bar too small to see. `prepare.py` catches the first two; fix the order or the title in deck.json, never the numbers.
 - Does every number in the slide title appear in the chart? A title about "$12B raised" over a chart that only shows "$9.68B net financing" makes the reader do the arithmetic; split the step so the chart shows what the title says.
 - Is the title's claim true of the chart? Read the chart alone and say what it shows, then compare. "Most of the $12B was spent on GPUs" over a bridge that ends with $7.6B still in cash is false even though every bar is right. Rewrite the title from what the chart shows.
+- Funding: does any slide, KPI or headline call an amount "unfunded" or a "gap" while counting financing that is only targeted? State the amount not yet committed and the condition behind the smaller number, and check targeted bars draw outlined.
 - For every chart slide, write one line in `build/design-notes.md`: "chart shows ... / title says ...". If the two lines do not match, the slide is not done.
 - Do the chart's labels use the same words and precision as the bullets? A bar called "Convert buybacks" next to a bullet saying "No buybacks", or $7.2B on the bar and $7.24B in the text, makes the reader doubt both.
 

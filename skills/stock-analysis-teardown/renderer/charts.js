@@ -326,7 +326,8 @@ function optWaterfall(ch, w, h) {
       // Steps are neutral grey: a step only moves the total, it is not good or bad news by
       // itself (adding back an impairment is not good news). tone colours a step only when the
       // judgment is the point, such as a funding gap (bad) or a cost saving (good).
-      const kind = s.tone === 'bad' ? 'down' : s.tone === 'good' ? 'up' : 'step';
+      // pending draws outlined: money that is targeted but not signed must not look like money in hand.
+      const kind = s.tone === 'bad' ? 'down' : s.tone === 'good' ? 'up' : s.tone === 'pending' ? 'pending' : 'step';
       spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind, neg: v < 0, end: running });
       signed.push(v);
     }
@@ -334,7 +335,7 @@ function optWaterfall(ch, w, h) {
   const n = spans.length;
   const blank = () => new Array(n).fill(null);
   const basePos = blank(), baseNeg = blank();
-  const parts = { total: [blank(), blank()], step: [blank(), blank()], up: [blank(), blank()], down: [blank(), blank()] };
+  const parts = { total: [blank(), blank()], step: [blank(), blank()], up: [blank(), blank()], down: [blank(), blank()], pending: [blank(), blank()] };
   spans.forEach((sp, j) => {
     const [pos, neg] = parts[sp.kind];
     if (sp.hi > 0) { // portion above zero
@@ -359,9 +360,12 @@ function optWaterfall(ch, w, h) {
     { type: 'bar', stack: 'w', data: basePos, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
     { type: 'bar', stack: 'w', data: baseNeg, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
   ];
-  ['total', 'step', 'up', 'down'].forEach((k) => {
+  ['total', 'step', 'up', 'down', 'pending'].forEach((k) => {
+    const style = k === 'pending'
+      ? { color: 'rgba(31,95,174,0.08)', borderColor: THEME.roles.primary, borderWidth: 1.5, borderType: [5, 3] }
+      : { color: color[k] };
     parts[k].forEach((arr, side) => o.series.push({ type: 'bar', stack: 'w', data: arr, barMaxWidth: 40,
-      itemStyle: { color: color[k], borderRadius: side === 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } }));
+      itemStyle: { ...style, borderRadius: side === 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } }));
   });
   // Connector lines: a dashed line from where each bar ends to where the next one starts, so
   // the eye can follow the walk instead of seeing bars float at random heights.

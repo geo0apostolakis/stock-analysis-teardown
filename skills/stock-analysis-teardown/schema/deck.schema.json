@@ -316,7 +316,7 @@
         },
         "steps": {
           "type": "array",
-          "description": "waterfall steps {label, value, total?, tone?}; tone good or bad overrides the colour the sign gives"
+          "description": "waterfall steps {label, value, total?, tone?}; tone good or bad colours a step green or red; pending draws it outlined (targeted funding, not signed)"
         },
         "points": {
           "type": "array",

@@ -195,12 +195,15 @@ def resolve_chart(ch, ctx, where):
         for s in ch.get("steps", []):
             step = {"label": ctx.text(s["label"], where), "value": ctx.number(s.get("value"), where),
                     "total": bool(s.get("total"))}
-            if s.get("tone") in ("good", "bad"):
+            if s.get("tone") in ("good", "bad", "pending"):
                 step["tone"] = s["tone"]
             steps.append(step)
         ch["steps"] = steps
         # every bridge says how to read it; readers expect bars to start at zero
-        ch.setdefault("subtitle", "Blue bars are totals. Every other bar starts where the one before it ended")
+        sub = "Blue bars are totals. Every other bar starts where the one before it ended"
+        if any(s.get("tone") == "pending" for s in steps):
+            sub += ". Outlined bars are targeted, not signed"
+        ch.setdefault("subtitle", sub)
         waterfall_checks(ch, ctx, where)
     elif kind == "segmented-bar":
         ch["parts"] = [dict(p, value=ctx.number(p.get("value"), where), label=ctx.text(p.get("label", ""), where))
@@ -299,6 +302,13 @@ def waterfall_checks(ch, ctx, where):
             ctx.warnings.append(
                 f"{where}: waterfall step '{s['label']}' ({s['value']:,.1f}) is under 1% of the chart's "
                 f"range, so it draws as a label with no bar; fold it into a neighbouring step")
+    # Funding status: money a company plans or hopes to raise must not draw like money it has.
+    for s in steps:
+        if (not s["total"] and s.get("tone") != "pending"
+                and re.search(r"\b(target|targeted|planned|expected|proposed|pipeline|in talks|not yet signed|uncommitted)\b", s["label"], re.I)):
+            ctx.warnings.append(
+                f"{where}: waterfall step '{s['label']}' sounds like funding that is not signed yet but draws like "
+                f"money in hand. Give it \"tone\": \"pending\" so it draws outlined")
     for s in steps:
         if not s["total"] and re.match(r"(add|less|plus|minus|deduct)\b", s["label"].strip(), re.I):
             ctx.warnings.append(

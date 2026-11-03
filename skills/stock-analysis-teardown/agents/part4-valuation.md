@@ -31,6 +31,8 @@ python3 SKILL_DIR/scripts/valuation.py run RUN_DIR
 and read `data/valuation.json`. Sanity checks before you write slides:
 
 - WACC usually lands between 7% and 13% for a listed company. Outside that, find out why.
+- Set `cost_of_debt` to what the company pays to borrow today: the rate on its newest loan or bond, or the straight-debt yield of its converts (a 0% to 3% coupon is paid for with an equity option, so it is not the cost of debt). Historical interest / debt understates it when debt is new, interest is capitalized or the converts carry low coupons, and `valuation.py` stops if that ratio is below the risk-free rate.
+- When you compare the WACC with a borrowing rate, compare like with like and get the direction right. WACC blends equity and after-tax debt, so a WACC above the newest loan rate is not by itself too low. The test is the cost of equity: for a loss-making company with a beta near 2 it should sit well above its secured borrowing rate. Show the build on the slide (cost of equity, pre-tax and after-tax cost of debt, weights).
 - If the terminal value is more than about 75% of the base case value, say so on the slide.
 - The base case should be explainable in one sentence. If it needs a paragraph, simplify.
 - Re-run after every change. Every number on your slides comes from tokens that this run writes.
