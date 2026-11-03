@@ -196,6 +196,7 @@ def resolve_chart(ch, ctx, where):
             steps.append({"label": ctx.text(s["label"], where), "value": ctx.number(s.get("value"), where),
                           "total": bool(s.get("total"))})
         ch["steps"] = steps
+        waterfall_checks(ch, ctx, where)
     elif kind == "segmented-bar":
         ch["parts"] = [dict(p, value=ctx.number(p.get("value"), where), label=ctx.text(p.get("label", ""), where))
                        for p in ch.get("parts", [])]
@@ -220,7 +221,104 @@ def resolve_chart(ch, ctx, where):
         for a in ch.get("annotations", []):
             a["text"] = ctx.text(a.get("text", ""), where)
     ch.setdefault("unit", "num")
+    money_title_check(ch, ctx, where)
     return ch
+
+
+def waterfall_path(steps):
+    """Running total after each step, the way the renderer draws it."""
+    running, path = 0.0, []
+    for s in steps:
+        if s["total"]:
+            running = s["value"] if s["value"] is not None else running
+        else:
+            running += s["value"] or 0
+        path.append(running)
+    return path
+
+
+def waterfall_checks(ch, ctx, where):
+    """Catch bridges that are arithmetically right but draw a picture that is wrong.
+
+    1. A bridge between two balances that are both zero or above (cash, debt, equity) can
+       always be ordered so the running total never goes below zero: inflows first, then
+       outflows. If it dips below zero, the chart shows a negative cash balance that never
+       existed, usually because capex comes before the financing that paid for it.
+    2. A total step that carries its own value (a closing balance from the filing) must equal
+       the running total the steps before it add up to, or the bridge does not reconcile.
+    3. A step too small to see leaves a floating label with no bar; fold it into a neighbour.
+    """
+    steps = ch["steps"]
+    if not steps:
+        return
+    title = ch.get("title", "")
+    running = 0.0
+    for i, s in enumerate(steps):
+        if s["total"] and s["value"] is not None and i > 0:
+            gap = s["value"] - running
+            if abs(gap) > max(1.0, 0.005 * abs(s["value"])):
+                ctx.errors.append(
+                    f"{where}: waterfall '{title}': steps add up to {running:,.1f} but '{s['label']}' is "
+                    f"{s['value']:,.1f} (gap {gap:,.1f}); a step is missing or has the wrong sign")
+        if s["total"]:
+            running = s["value"] if s["value"] is not None else running
+        else:
+            running += s["value"] or 0
+    path = waterfall_path(steps)
+    totals = [v for v, s in zip(path, steps) if s["total"]]
+    low = min(path)
+    if len(totals) >= 2 and totals[0] >= 0 and totals[-1] >= 0 and low < 0:
+        at = steps[path.index(low)]["label"]
+        ctx.errors.append(
+            f"{where}: waterfall '{title}' starts and ends at or above zero but the running total "
+            f"falls to {low:,.1f} after '{at}'. That draws a balance below zero that never existed. "
+            f"Put the inflows (operating cash flow, financing, proceeds) before the outflows (capex, "
+            f"acquisitions, repayments)")
+    span = max(abs(v) for v in path) or 1.0
+    for s in steps:
+        if not s["total"] and s["value"] is not None and 0 < abs(s["value"]) < 0.01 * span:
+            ctx.warnings.append(
+                f"{where}: waterfall step '{s['label']}' ({s['value']:,.1f}) is under 1% of the chart's "
+                f"range, so it draws as a label with no bar; fold it into a neighbouring step")
+
+
+def chart_peak(ch):
+    """Largest absolute value the value axis has to reach."""
+    k = ch.get("kind")
+    if k == "waterfall":
+        return max((abs(v) for v in waterfall_path(ch.get("steps") or [])), default=0)
+    ser = ch.get("series") or []
+    vals = [[x for x in s.get("data", []) if isinstance(x, (int, float))] for s in ser]
+    if k == "stacked-bar" and ser:
+        n = max(len(s.get("data", [])) for s in ser)
+        sums = []
+        for j in range(n):
+            col = [s["data"][j] for s in ser if j < len(s.get("data", [])) and isinstance(s["data"][j], (int, float))]
+            sums += [sum(x for x in col if x > 0), sum(x for x in col if x < 0)]
+        return max((abs(x) for x in sums), default=0)
+    return max((abs(x) for v in vals for x in v), default=0)
+
+
+def money_title_check(ch, ctx, where):
+    """money_m axes print their own $M/$B/$T labels. Once a chart reaches 1,000 (millions), the
+    axis reads $2.0B, $4.0B ... so a title that says "millions" contradicts the axis. Rewrite
+    the word to match and say so."""
+    if ch.get("unit") != "money_m" or ch.get("kind") in ("sankey",):
+        return
+    title = ch.get("title", "")
+    if not re.search(r"\bmillions\b", title, re.I):
+        return
+    peak = chart_peak(ch)
+    if peak >= 1e6:
+        word = "trillions"
+    elif peak >= 1000:
+        word = "billions"
+    else:
+        return
+    ch["title"] = re.sub(r"\bmillions\b", word, title, flags=re.I)
+    ctx.warnings.append(
+        f"{where}: chart title said 'millions' but the axis prints {word} (peak {peak:,.0f}M); "
+        f"title rewritten to '{ch['title']}'. Name money charts in the unit the axis shows")
 
 
 def sankey(ch, ctx, where):
@@ -400,7 +498,9 @@ def prepare(run_dir, deck_path=None, strict=True, out_path=None):
     write_json(out_path, out)
     for e in ctx.errors:
         print("ERROR:", e, file=sys.stderr)
-    print(f"prepared {len(out['slides'])} slides, {len(ctx.errors)} errors -> {out_path}")
+    for w in ctx.warnings:
+        print("WARN:", w, file=sys.stderr)
+    print(f"prepared {len(out['slides'])} slides, {len(ctx.errors)} errors, {len(ctx.warnings)} warnings -> {out_path}")
     if strict and ctx.errors:
         sys.exit(1)
     return out

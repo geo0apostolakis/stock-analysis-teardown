@@ -355,7 +355,7 @@ const LAYOUTS = {
 
   sources(s, deck) {
     const items = s.items || [];
-    const body = `<div class="bd"><ol class="srcs" data-fit="11.5">${items.map((x) => `<li><span class="sid">${esc(x.id)}</span><span>${rich(x.title)}${x.publisher ? `. ${rich(x.publisher)}` : ''}${x.date ? `, ${esc(x.date)}` : ''}.${x.vendor ? '<span class="vend">vendor</span>' : ''}
+    const body = `<div class="bd col" style="gap:0"><ol class="srcs" data-fit="11.5">${items.map((x) => `<li><span class="sid">${esc(x.id)}</span><span>${rich(x.title)}${x.publisher ? `. ${rich(x.publisher)}` : ''}${x.date ? `, ${esc(x.date)}` : ''}.${x.vendor ? '<span class="vend">vendor</span>' : ''}
       <span class="u">${esc(x.url)}</span></span></li>`).join('')}</ol>
       <p class="src-disc">Not investment advice. Research for education and discussion, built from public filings and market data as of ${esc(niceDate(deck.meta.as_of))}.</p></div>`;
     return frame(s, deck, body, { noBottom: true });

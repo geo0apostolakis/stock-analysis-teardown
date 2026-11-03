@@ -124,7 +124,7 @@ Generated, and always the last slide. The source list paginates itself and each 
 
 ## Chart kinds
 
-Every chart has a short `title` naming the measure and unit ("Revenue, $ millions"), optional `subtitle`, `source` and `refs`. Series use `metric` (a series key in metrics.json; years come from the display window) or `data` with `categories`. Roles colour the series: `primary` (the company or the main measure), `secondary`, `tertiary`, `muted` (comparison). Use them in that order.
+Every chart has a short `title` naming the measure and unit ("Revenue, $ millions"). Money axes print their own $M/$B/$T labels, so name the unit the axis will show: once any bar or running total reaches 1,000 (millions), write "$ billions" ("Cash, FY2026, $ billions"). `prepare.py` rewrites a wrong "millions" and warns. Each chart also takes optional `subtitle`, `source` and `refs`. Series use `metric` (a series key in metrics.json; years come from the display window) or `data` with `categories`. Roles colour the series: `primary` (the company or the main measure), `secondary`, `tertiary`, `muted` (comparison). Use them in that order.
 
 | Kind | Use it for | Notes |
 |---|---|---|
@@ -134,7 +134,7 @@ Every chart has a short `title` naming the measure and unit ("Revenue, $ million
 | `line` | margins and ratios over time, two to four series | no dual axis, ever |
 | `area` | one cumulative or volume series over time | `"periods": "quarterly"` for the last 12 quarters |
 | `hbar` | ranking across companies or products | sorted, `highlight` the company |
-| `waterfall` | bridges: GAAP to normalized, net income to FCF | `steps: [{label, value, total?}]`, a step with `total: true` and no value prints the running total |
+| `waterfall` | bridges: GAAP to normalized, net income to FCF, opening to closing cash | `steps: [{label, value, total?}]`, a step with `total: true` and no value prints the running total. Give the closing total its filed value when there is one, so `prepare.py` can check the steps add up to it. In a bridge between two balances at or above zero (cash, debt), put the inflows before the outflows: operating cash flow and financing first, then capex and acquisitions. Following the cash flow statement order (operating, investing, financing) makes the running total dip below zero and draws a cash balance that never existed; `prepare.py` stops on it. Fold steps under 1% of the range (FX, rounding) into a neighbour |
 | `sankey` | where revenue goes | `"from": "income_statement"`, optional `period` |
 | `scatter` | growth against valuation across peers | `"from": "peers", "x_metric": "revenue_growth", "y_metric": "ev_sales_ttm"` |
 | `football-field` | valuation ranges against the price | data from valuation.json |

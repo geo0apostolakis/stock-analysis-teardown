@@ -27,6 +27,7 @@ Open `build/shots/contact-sheet.png` first and judge the rhythm. Then open every
 - Is anything cramped, clipped, overlapping, or tiny? Is anything mostly empty?
 - Do three slides in a row look the same? Vary the layout or flip `chart_side`.
 - Would a reader understand the chart without the bullets?
+- Does the chart say something false even though every number is right? A cash or debt bridge that dips below zero, a title unit that disagrees with the axis, a value label floating over a bar too small to see. `prepare.py` catches the first two; fix the order or the title in deck.json, never the numbers.
 
 ## 3. Fix in deck.json
 

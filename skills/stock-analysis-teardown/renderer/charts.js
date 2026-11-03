@@ -261,35 +261,59 @@ function addAnnotations(o, ch, cats) {
 }
 
 function optWaterfall(ch, w, h) {
+  // Floating bars drawn as stacks. ECharts stacks positive and negative values separately,
+  // so every bar is split into its part above zero and its part below zero, each on its own
+  // transparent base. That keeps bars that cross zero (or sit wholly below it) in the right place.
   const steps = ch.steps || [];
   let running = 0;
-  const cats = [], baseData = [], upData = [], downData = [], totalData = [];
+  const cats = [], spans = [], signed = [];
   steps.forEach((s) => {
     cats.push(s.label);
     if (s.total) {
       const v = s.value !== null && s.value !== undefined ? s.value : running;
       running = v;
-      baseData.push(0); totalData.push(v); upData.push(null); downData.push(null);
+      spans.push({ lo: Math.min(0, v), hi: Math.max(0, v), kind: 'total' });
+      signed.push(v);
     } else {
       const v = s.value || 0;
       const start = running;
       running += v;
-      baseData.push(Math.min(start, running)); upData.push(v >= 0 ? v : null); downData.push(v < 0 ? -v : null); totalData.push(null);
+      spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind: v >= 0 ? 'up' : 'down' });
+      signed.push(v);
     }
   });
-  const signed = steps.map((s, j) => (s.total ? totalData[j] : s.value));
+  const n = spans.length;
+  const blank = () => new Array(n).fill(null);
+  const basePos = blank(), baseNeg = blank();
+  const parts = { total: [blank(), blank()], up: [blank(), blank()], down: [blank(), blank()] };
+  spans.forEach((sp, j) => {
+    const [pos, neg] = parts[sp.kind];
+    if (sp.hi > 0) { // portion above zero
+      const lo = Math.max(sp.lo, 0);
+      basePos[j] = lo; pos[j] = sp.hi - lo;
+    }
+    if (sp.lo < 0) { // portion below zero
+      const hi = Math.min(sp.hi, 0);
+      baseNeg[j] = hi; neg[j] = sp.lo - hi;
+    }
+    if (sp.hi === sp.lo) { basePos[j] = sp.hi; pos[j] = 0; }
+  });
   const o = base(ch, w, h);
   o.xAxis = catAxis(cats, { axisLabel: { color: THEME.ink2, fontSize: 13, interval: 0, width: Math.max(80, (w - 80) / cats.length - 8), overflow: 'break', fontFamily: THEME.font } });
   o.yAxis = valueAxis(ch.unit, ch.sym);
-  const lbl = (arr) => ({ show: true, position: 'top', color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
-    formatter: (p) => (arr[p.dataIndex] === null ? '' : fmtNum(signed[p.dataIndex], ch.unit, ch.sym)) });
-  const style = (c) => ({ color: c, borderRadius: 4 });
+  const color = { total: THEME.roles.primary, up: THEME.roles.positive, down: THEME.roles.negative };
   o.series = [
-    { type: 'bar', stack: 'w', data: baseData, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
-    { type: 'bar', stack: 'w', data: totalData, itemStyle: style(THEME.roles.primary), barMaxWidth: 40, label: lbl(totalData) },
-    { type: 'bar', stack: 'w', data: upData, itemStyle: style(THEME.roles.positive), barMaxWidth: 40, label: lbl(upData) },
-    { type: 'bar', stack: 'w', data: downData, itemStyle: style(THEME.roles.negative), barMaxWidth: 40, label: lbl(downData) },
+    { type: 'bar', stack: 'w', data: basePos, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
+    { type: 'bar', stack: 'w', data: baseNeg, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
   ];
+  ['total', 'up', 'down'].forEach((k) => {
+    parts[k].forEach((arr, side) => o.series.push({ type: 'bar', stack: 'w', data: arr, barMaxWidth: 40,
+      itemStyle: { color: color[k], borderRadius: side === 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } }));
+  });
+  // value labels sit just above the top of each bar
+  o.series.push({ type: 'scatter', data: spans.map((sp, j) => [j, sp.hi]), symbolSize: 0, silent: true, z: 10,
+    label: { show: true, position: 'top', distance: 6, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
+      formatter: (p) => fmtNum(signed[p.dataIndex], ch.unit, ch.sym) } });
   return o;
 }
 
@@ -363,14 +387,23 @@ function optFootball(ch, w, h) {
   const kindColor = { dcf: THEME.roles.primary, market: THEME.roles.muted, peers: THEME.roles.secondary, history: THEME.roles.tertiary, analysts: THEME.roles.muted };
   const o = base(ch, w, h, { rightPad: 60 });
   o.yAxis = catAxis(cats, { axisLine: { show: false }, axisLabel: { color: THEME.ink2, fontSize: 14, fontFamily: THEME.font, width: 260, overflow: 'break' } });
-  o.xAxis = valueAxis('ps', ch.sym, { scale: false, min: 0 });
+  // A range that dips below zero is drawn as two pieces: the part below zero stacks left of the
+  // axis and the part above zero stacks right, so neither end is clipped or shifted.
+  const anyNeg = bars.some((b) => Math.min(b.low, b.high) < 0);
+  o.xAxis = valueAxis('ps', ch.sym, anyNeg ? { scale: false } : { scale: false, min: 0 });
+  const lo = (b) => Math.min(b.low, b.high), hi = (b) => Math.max(b.low, b.high);
   const label = (pos, key) => ({ show: true, position: pos, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
     formatter: (p) => fmtNum(bars[p.dataIndex][key], 'ps', ch.sym, true) });
+  const colorOf = (b) => kindColor[b.kind] || THEME.roles.primary;
   o.series = [
-    { type: 'bar', stack: 'ff', data: bars.map((b) => Math.min(b.low, b.high)), itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 22,
-      label: { ...label('insideRight', 'low'), color: THEME.ink2, fontWeight: 400 } },
+    { type: 'bar', stack: 'ff', data: bars.map((b) => (lo(b) >= 0 ? lo(b) : 0)), itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 22,
+      label: { ...label('insideRight', 'low'), color: THEME.ink2, fontWeight: 400,
+        formatter: (p) => (lo(bars[p.dataIndex]) >= 0 ? fmtNum(bars[p.dataIndex].low, 'ps', ch.sym, true) : '') } },
     { type: 'bar', stack: 'ff', barMaxWidth: 22,
-      data: bars.map((b) => ({ value: Math.abs(b.high - b.low), itemStyle: { color: kindColor[b.kind] || THEME.roles.primary, borderRadius: 4 } })),
+      data: bars.map((b) => (lo(b) < 0 ? { value: lo(b), itemStyle: { color: colorOf(b), borderRadius: [4, 0, 0, 4] } } : null)),
+      label: { ...label('left', 'low'), color: THEME.ink2, fontWeight: 400 } },
+    { type: 'bar', stack: 'ff', barMaxWidth: 22,
+      data: bars.map((b) => ({ value: hi(b) - Math.max(lo(b), 0), itemStyle: { color: colorOf(b), borderRadius: lo(b) < 0 ? [0, 4, 4, 0] : 4 } })),
       label: { ...label('right', 'high') },
       markLine: ch.price ? {
         silent: true, symbol: 'none', lineStyle: { color: THEME.ink, width: 1.5, type: 'solid' },
