@@ -299,6 +299,12 @@ def waterfall_checks(ch, ctx, where):
             ctx.warnings.append(
                 f"{where}: waterfall step '{s['label']}' ({s['value']:,.1f}) is under 1% of the chart's "
                 f"range, so it draws as a label with no bar; fold it into a neighbouring step")
+    for s in steps:
+        if not s["total"] and re.match(r"(add|less|plus|minus|deduct)\b", s["label"].strip(), re.I):
+            ctx.warnings.append(
+                f"{where}: waterfall step '{s['label']}' starts with a direction word, but the bar already "
+                f"carries its sign (+$639M, -$559M), so 'Less' next to a minus reads as a double negative. "
+                f"Name the item only, such as 'Impairment' or 'Capped-call gain'")
 
 
 def chart_peak(ch):
