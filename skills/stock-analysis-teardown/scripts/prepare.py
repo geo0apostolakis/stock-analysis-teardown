@@ -199,6 +199,8 @@ def resolve_chart(ch, ctx, where):
                 step["tone"] = s["tone"]
             steps.append(step)
         ch["steps"] = steps
+        # every bridge says how to read it; readers expect bars to start at zero
+        ch.setdefault("subtitle", "Blue bars are totals. Every other bar starts where the one before it ended")
         waterfall_checks(ch, ctx, where)
     elif kind == "segmented-bar":
         ch["parts"] = [dict(p, value=ctx.number(p.get("value"), where), label=ctx.text(p.get("label", ""), where))

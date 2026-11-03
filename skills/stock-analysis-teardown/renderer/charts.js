@@ -317,23 +317,24 @@ function optWaterfall(ch, w, h) {
     if (s.total) {
       const v = s.value !== null && s.value !== undefined ? s.value : running;
       running = v;
-      spans.push({ lo: Math.min(0, v), hi: Math.max(0, v), kind: 'total', neg: v < 0 });
+      spans.push({ lo: Math.min(0, v), hi: Math.max(0, v), kind: 'total', neg: v < 0, end: v });
       signed.push(v);
     } else {
       const v = s.value || 0;
       const start = running;
       running += v;
-      // tone lets a step that adds to the bar still read as bad (a funding gap) or one that
-      // subtracts read as good (a cost saving); without it the sign decides the colour
-      const kind = s.tone === 'bad' ? 'down' : s.tone === 'good' ? 'up' : v >= 0 ? 'up' : 'down';
-      spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind, neg: v < 0 });
+      // Steps are neutral grey: a step only moves the total, it is not good or bad news by
+      // itself (adding back an impairment is not good news). tone colours a step only when the
+      // judgment is the point, such as a funding gap (bad) or a cost saving (good).
+      const kind = s.tone === 'bad' ? 'down' : s.tone === 'good' ? 'up' : 'step';
+      spans.push({ lo: Math.min(start, running), hi: Math.max(start, running), kind, neg: v < 0, end: running });
       signed.push(v);
     }
   });
   const n = spans.length;
   const blank = () => new Array(n).fill(null);
   const basePos = blank(), baseNeg = blank();
-  const parts = { total: [blank(), blank()], up: [blank(), blank()], down: [blank(), blank()] };
+  const parts = { total: [blank(), blank()], step: [blank(), blank()], up: [blank(), blank()], down: [blank(), blank()] };
   spans.forEach((sp, j) => {
     const [pos, neg] = parts[sp.kind];
     if (sp.hi > 0) { // portion above zero
@@ -353,15 +354,26 @@ function optWaterfall(ch, w, h) {
   o.xAxis = catAxis(cats, { axisLabel: { color: THEME.ink2, fontSize: 13, interval: 0, width: Math.max(80, (w - 80) / cats.length - 8), overflow: 'break', fontFamily: THEME.font } });
   const ends = spans.flatMap((sp) => [sp.lo, sp.hi]);
   o.yAxis = valueAxis(ch.unit, ch.sym, {}, ends);
-  const color = { total: THEME.roles.primary, up: THEME.roles.positive, down: THEME.roles.negative };
+  const color = { total: THEME.roles.primary, step: THEME.roles.muted, up: THEME.roles.positive, down: THEME.roles.negative };
   o.series = [
     { type: 'bar', stack: 'w', data: basePos, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
     { type: 'bar', stack: 'w', data: baseNeg, itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 40 },
   ];
-  ['total', 'up', 'down'].forEach((k) => {
+  ['total', 'step', 'up', 'down'].forEach((k) => {
     parts[k].forEach((arr, side) => o.series.push({ type: 'bar', stack: 'w', data: arr, barMaxWidth: 40,
       itemStyle: { color: color[k], borderRadius: side === 0 ? [4, 4, 0, 0] : [0, 0, 4, 4] } }));
   });
+  // Connector lines: a dashed line from where each bar ends to where the next one starts, so
+  // the eye can follow the walk instead of seeing bars float at random heights.
+  const links = [];
+  for (let j = 0; j < n - 1; j += 1) {
+    const level = spans[j].end;
+    const next = spans[j + 1];
+    if (next.kind === 'total' && Math.abs(next.end - level) > 1e-9) continue; // a total restarts at zero
+    links.push([{ coord: [j, level] }, { coord: [j + 1, level] }]);
+  }
+  o.series[0].markLine = { silent: true, symbol: 'none', animation: false, z: 1,
+    lineStyle: { color: THEME.ink2, width: 1, type: [4, 3], opacity: 0.7 }, label: { show: false }, data: links };
   // A value label sits at the end the bar moves toward: above a rise or a positive total,
   // below a fall or a negative total. A label for -$703M parked above the zero line reads
   // as if the bar went up.
@@ -370,7 +382,11 @@ function optWaterfall(ch, w, h) {
     data: spans.map((sp, j) => ({ value: [j, sp.neg ? sp.lo : sp.hi],
       label: { position: sp.neg ? 'bottom' : 'top' } })),
     label: { show: true, distance: 6, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
-      formatter: (p) => fmtLab(signed[p.dataIndex]) } });
+      formatter: (p) => {
+        // steps carry an explicit + so a rise and a fall read differently even in one colour
+        const t = fmtLab(signed[p.dataIndex]);
+        return spans[p.dataIndex].kind !== 'total' && signed[p.dataIndex] > 0 ? `+${t}` : t;
+      } } });
   return o;
 }
 
