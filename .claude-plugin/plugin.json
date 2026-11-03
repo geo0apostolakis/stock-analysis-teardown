@@ -1,0 +1,13 @@
+{
+  "name": "stock-analysis-teardown",
+  "description": "Type a ticker, get a 16:9 equity research deck as a PDF. Eight agents pull SEC data, research the business, check every number and design the slides.",
+  "version": "1.0.0",
+  "author": {
+    "name": "George Apostolakis",
+    "url": "https://georgeapostolakis.com"
+  },
+  "homepage": "https://github.com/geo0apostolakis/stock-analysis-teardown",
+  "repository": "https://github.com/geo0apostolakis/stock-analysis-teardown",
+  "license": "MIT",
+  "keywords": ["stocks", "equity research", "sec", "valuation", "dcf", "pdf", "slides"]
+}

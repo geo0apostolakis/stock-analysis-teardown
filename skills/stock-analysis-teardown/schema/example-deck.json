@@ -1,0 +1,923 @@
+{
+ "meta": {
+  "ticker": "MRVL",
+  "company": "Marvell Technology",
+  "exchange": "Nasdaq",
+  "as_of": "2026-11-02",
+  "subtitle": "Layout example. The words are placeholders and the numbers are tokens filled from metrics.json.",
+  "verdict": "Constructive but conditional",
+  "verdict_line": "Growth is real, the price already assumes about {{m:reverse_dcf_revenue_cagr|pct}} a year of revenue growth for a decade.",
+  "quality_score": 3.6,
+  "data_confidence": "high",
+  "fiscal_note": "Fiscal years end in late January; FY2026 ended 31 Jan 2026."
+ },
+ "sources": [
+  {
+   "id": "S1",
+   "title": "Form 10-K for fiscal year 2026, Item 2",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000001/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S2",
+   "title": "Form 10-K for fiscal year 2026, Item 3",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000002/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S3",
+   "title": "Form 10-K for fiscal year 2026, Item 4",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000003/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S4",
+   "title": "Form 10-K for fiscal year 2026, Item 5",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000004/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S5",
+   "title": "Form 10-K for fiscal year 2026, Item 6",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000005/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S6",
+   "title": "Form 10-K for fiscal year 2026, Item 7",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000006/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  },
+  {
+   "id": "S7",
+   "title": "Industry tracker note 7 on data-centre interconnect demand and pricing",
+   "publisher": "Example Research",
+   "url": "https://example.com/research/notes/2026/interconnect-demand-and-pricing-update-7",
+   "date": "2026-09-14",
+   "type": "industry",
+   "vendor": false
+  },
+  {
+   "id": "S8",
+   "title": "Form 10-K for fiscal year 2026, Item 9",
+   "publisher": "Marvell Technology via SEC EDGAR",
+   "url": "https://www.sec.gov/Archives/edgar/data/1835632/000183563226000008/mrvl-20260131.htm",
+   "date": "2026-03-12",
+   "type": "filing"
+  }
+ ],
+ "slides": [
+  {
+   "id": "cover",
+   "part": "cover",
+   "layout": "cover",
+   "title": "Marvell Technology",
+   "kpis": [
+    {
+     "label": "Share price",
+     "value": "{{m:price|ps}}"
+    },
+    {
+     "label": "Market cap",
+     "value": "{{m:market_cap|money}}"
+    },
+    {
+     "label": "P/E, trailing",
+     "value": "{{m:pe_ttm|x}}"
+    },
+    {
+     "label": "EV / sales, trailing",
+     "value": "{{m:ev_sales_ttm|x}}"
+    }
+   ],
+   "charts": [
+    {
+     "kind": "price",
+     "title": "Share price, five years",
+     "events": [
+      {
+       "date": "2024-06-01",
+       "label": "Custom silicon ramp"
+      },
+      {
+       "date": "2026-11-02",
+       "label": "Lumentum deal"
+      }
+     ],
+     "source": "Yahoo Finance"
+    }
+   ]
+  },
+  {
+   "id": "roadmap",
+   "part": "summary",
+   "layout": "roadmap",
+   "kicker": "Contents",
+   "title": "Four parts, from the business to the price"
+  },
+  {
+   "id": "exec",
+   "part": "summary",
+   "layout": "exec-summary",
+   "kicker": "Executive summary",
+   "title": "A real growth story priced for a long run of it",
+   "kpis": [
+    {
+     "label": "Revenue FY2026",
+     "value": "{{m:revenue@FY2026|money}}",
+     "sub": "{{m:revenue_growth@FY2026|pct1+}} on the year",
+     "tone": "good"
+    },
+    {
+     "label": "Gross margin",
+     "value": "{{m:gross_margin@FY2026|pct1}}"
+    },
+    {
+     "label": "Free cash flow",
+     "value": "{{m:fcf@FY2026|money}}",
+     "sub": "{{m:fcf_margin@FY2026|pct}} of revenue"
+    },
+    {
+     "label": "SBC share of revenue",
+     "value": "{{m:sbc_pct_revenue@FY2026|pct1}}",
+     "tone": "bad",
+     "sub": "a real cost to owners"
+    },
+    {
+     "label": "Net debt",
+     "value": "{{m:net_debt@LATEST|money}}"
+    }
+   ],
+   "strengths": [
+    {
+     "lead": "Custom silicon.",
+     "text": "Placeholder sentence about design wins with large cloud buyers that keeps going for a second line to test wrapping.",
+     "refs": [
+      "S1"
+     ]
+    },
+    {
+     "lead": "Optics.",
+     "text": "Placeholder sentence about the electro-optics franchise.",
+     "refs": [
+      "S7"
+     ]
+    },
+    {
+     "lead": "Cash.",
+     "text": "Operating cash flow grew from {{m:cfo@FY2022|money}} to {{m:cfo@FY2026|money}}."
+    }
+   ],
+   "risks": [
+    {
+     "lead": "Concentration.",
+     "text": "Placeholder sentence about the top customers.",
+     "refs": [
+      "S2"
+     ]
+    },
+    {
+     "lead": "Valuation.",
+     "text": "The price implies {{m:reverse_dcf_revenue_cagr|pct}} revenue growth a year for ten years."
+    },
+    {
+     "lead": "Dilution.",
+     "text": "Diluted shares changed {{m:shares_diluted_change|pct1+}} over the window."
+    }
+   ],
+   "takeaway": "The business is better than its GAAP earnings show, and the price already knows it."
+  },
+  {
+   "id": "p1",
+   "part": "part1",
+   "layout": "divider",
+   "kicker": "Part 1",
+   "title": "The business",
+   "lead": "What Marvell sells, to whom, and why customers stay.",
+   "bullets": [
+    "Business model and segments",
+    "Industry, moat and pricing power",
+    "Management, risks and strategy"
+   ]
+  },
+  {
+   "id": "model",
+   "part": "part1",
+   "sections": [
+    "1.1"
+   ],
+   "layout": "text",
+   "kicker": "Part 1 · Business model",
+   "title": "Marvell sells chips that move data, mostly inside data centres",
+   "columns": [
+    {
+     "heading": "What it sells",
+     "bullets": [
+      "Placeholder bullet one.",
+      "Placeholder bullet two with a source.",
+      {
+       "text": "Bullet with sub points",
+       "sub": [
+        "first",
+        "second"
+       ]
+      }
+     ]
+    },
+    {
+     "heading": "Who pays",
+     "bullets": [
+      "Placeholder bullet about hyperscalers.",
+      "Placeholder bullet about carriers."
+     ]
+    },
+    {
+     "heading": "How it earns",
+     "bullets": [
+      "Design wins that last years.",
+      "Gross margin {{m:gross_margin@FY2026|pct1}} in FY2026."
+     ]
+    }
+   ],
+   "takeaway": "Bottom line placeholder sentence for the business model."
+  },
+  {
+   "id": "rev",
+   "part": "part1",
+   "sections": [
+    "1.2"
+   ],
+   "layout": "text-chart",
+   "kicker": "Part 1 · Segments",
+   "title": "Revenue nearly doubled in four years after a dip in FY2024",
+   "bullets": [
+    "Revenue went from {{m:revenue@FY2022|money}} to {{m:revenue@FY2026|money}}.",
+    "Growth was {{m:revenue_growth@FY2026|pct1+}} in FY2026.",
+    {
+     "lead": "Why it matters.",
+     "text": "Placeholder sentence.",
+     "refs": [
+      "S3"
+     ]
+    }
+   ],
+   "charts": [
+    {
+     "kind": "bar",
+     "title": "Revenue, $ millions",
+     "series": [
+      {
+       "name": "Revenue",
+       "metric": "revenue"
+      }
+     ],
+     "highlight": "FY2026",
+     "annotations": [
+      {
+       "at": "FY2024",
+       "text": "Inventory correction"
+      }
+     ],
+     "source": "Form 10-K filings",
+     "refs": [
+      "S1"
+     ]
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "ma",
+   "part": "part1",
+   "sections": [
+    "1.10"
+   ],
+   "layout": "cards",
+   "kicker": "Part 1 · M&A",
+   "title": "Three deals built the data-centre business",
+   "cards": [
+    {
+     "tag": "2021",
+     "title": "Inphi",
+     "body": "Placeholder description of the deal and why it mattered.",
+     "facts": [
+      "Price ~$10B",
+      "Electro-optics"
+     ],
+     "refs": [
+      "S4"
+     ]
+    },
+    {
+     "tag": "2021",
+     "title": "Innovium",
+     "body": "Placeholder description.",
+     "facts": [
+      "Price ~$1.1B",
+      "Switching"
+     ]
+    },
+    {
+     "tag": "2026",
+     "title": "Lumentum (announced)",
+     "body": "Placeholder description of the announced combination.",
+     "facts": [
+      "Announced 2 Nov 2026",
+      "Pending approval"
+     ],
+     "refs": [
+      "S5"
+     ]
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "pp",
+   "part": "part1",
+   "sections": [
+    "1.5"
+   ],
+   "layout": "matrix",
+   "kicker": "Part 1 · Pricing power",
+   "title": "Custom silicon sits in the strong corner, storage does not",
+   "matrix": {
+    "x_label": "Customer switching cost",
+    "y_label": "Product differentiation",
+    "x_ends": [
+     "Low",
+     "High"
+    ],
+    "y_ends": [
+     "Low",
+     "High"
+    ],
+    "quadrants": [
+     "Differentiated, easy to leave",
+     "Pricing power",
+     "Commodity",
+     "Sticky but plain"
+    ],
+    "points": [
+     {
+      "label": "Custom AI silicon",
+      "x": 8.5,
+      "y": 8,
+      "highlight": true
+     },
+     {
+      "label": "Electro-optics",
+      "x": 7,
+      "y": 7.5
+     },
+     {
+      "label": "Storage controllers",
+      "x": 3,
+      "y": 3.5
+     },
+     {
+      "label": "Carrier",
+      "x": 6,
+      "y": 4
+     }
+    ]
+   },
+   "bullets": [
+    "Placeholder reasoning bullet one.",
+    "Placeholder reasoning bullet two.",
+    "Placeholder reasoning bullet three."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "prod",
+   "part": "part1",
+   "sections": [
+    "1.6"
+   ],
+   "layout": "timeline",
+   "kicker": "Part 1 · Products",
+   "title": "The product cadence moves every 18 to 24 months",
+   "timeline": [
+    {
+     "date": "2023",
+     "title": "800G DSP",
+     "body": "Placeholder."
+    },
+    {
+     "date": "2024",
+     "title": "Custom XPU ramp",
+     "body": "Placeholder with more words to wrap onto lines."
+    },
+    {
+     "date": "2025",
+     "title": "1.6T DSP",
+     "body": "Placeholder."
+    },
+    {
+     "date": "2026",
+     "title": "Co-packaged optics",
+     "body": "Placeholder."
+    },
+    {
+     "date": "2027",
+     "title": "Next node",
+     "body": "Placeholder."
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "score",
+   "part": "part1",
+   "sections": [
+    "1.12"
+   ],
+   "layout": "scorecard",
+   "kicker": "Part 1 · Quality scorecard",
+   "title": "A good business with two soft spots",
+   "scorecard": [
+    {
+     "criterion": "Growth",
+     "score": 4.5,
+     "comment": "Placeholder comment."
+    },
+    {
+     "criterion": "Moat",
+     "score": 4,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Margins",
+     "score": 3,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Capital allocation",
+     "score": 3.5,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Balance sheet",
+     "score": 4,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Management",
+     "score": 3.5,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Customer concentration",
+     "score": 2,
+     "comment": "Placeholder."
+    },
+    {
+     "criterion": "Dilution",
+     "score": 2.5,
+     "comment": "Placeholder."
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "p2",
+   "part": "part2",
+   "layout": "divider",
+   "kicker": "Part 2",
+   "title": "The numbers",
+   "lead": "Fourteen checks on growth, margins, cash and the balance sheet."
+  },
+  {
+   "id": "margins",
+   "part": "part2",
+   "sections": [
+    "2.2"
+   ],
+   "layout": "kpis-chart",
+   "kicker": "Part 2 · Margins",
+   "title": "Gross margin held near 50% while operating margin swung",
+   "kpis": [
+    {
+     "label": "Gross margin FY2026",
+     "value": "{{m:gross_margin@FY2026|pct1}}"
+    },
+    {
+     "label": "Operating margin FY2026",
+     "value": "{{m:operating_margin@FY2026|pct1}}"
+    },
+    {
+     "label": "Normalized operating margin",
+     "value": "{{m:normalized_operating_margin@FY2026|pct1}}"
+    }
+   ],
+   "charts": [
+    {
+     "kind": "line",
+     "title": "Margins, % of revenue",
+     "series": [
+      {
+       "name": "Gross",
+       "metric": "gross_margin"
+      },
+      {
+       "name": "Normalized operating",
+       "metric": "normalized_operating_margin"
+      },
+      {
+       "name": "GAAP operating",
+       "metric": "operating_margin"
+      }
+     ],
+     "source": "metrics.py from 10-K data"
+    }
+   ],
+   "bullets": [
+    "Placeholder note one.",
+    "Placeholder note two."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "sankey",
+   "part": "part2",
+   "sections": [
+    "2.3"
+   ],
+   "layout": "chart",
+   "kicker": "Part 2 · Where revenue goes",
+   "title": "R&D takes the biggest bite after the cost of chips",
+   "charts": [
+    {
+     "kind": "sankey",
+     "title": "Income statement, FY2026",
+     "from": "income_statement",
+     "source": "Form 10-K"
+    }
+   ],
+   "bullets": [
+    "Placeholder note.",
+    "R&D was {{m:rnd_pct@FY2026|pct1}} of revenue."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "opex",
+   "part": "part2",
+   "sections": [
+    "2.4",
+    "2.12"
+   ],
+   "layout": "two-charts",
+   "kicker": "Part 2 · Costs and debt",
+   "title": "Opex mix shifted toward R&D and the debt wall is spread out",
+   "charts": [
+    {
+     "kind": "stacked-bar",
+     "title": "Operating costs, $ millions",
+     "series": [
+      {
+       "name": "R&D",
+       "metric": "rnd"
+      },
+      {
+       "name": "SG&A",
+       "metric": "sga"
+      }
+     ]
+    },
+    {
+     "kind": "maturity-ladder",
+     "title": "Debt maturities, $ millions"
+    }
+   ],
+   "bullets": [
+    "Placeholder note one about opex.",
+    "Placeholder note two about debt."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "mix",
+   "part": "part2",
+   "sections": [
+    "2.4"
+   ],
+   "layout": "two-charts",
+   "kicker": "Part 2 · Mix",
+   "title": "Stacked shares and a ranked bar",
+   "charts": [
+    {
+     "kind": "stacked-100",
+     "title": "Opex mix, % of total",
+     "series": [
+      {
+       "name": "R&D",
+       "metric": "rnd"
+      },
+      {
+       "name": "SG&A",
+       "metric": "sga"
+      }
+     ]
+    },
+    {
+     "kind": "hbar",
+     "title": "Gross margin vs peers, TTM",
+     "categories": [
+      "MRVL",
+      "AVGO",
+      "CRDO"
+     ],
+     "unit": "pct",
+     "highlight": "MRVL",
+     "series": [
+      {
+       "name": "Gross margin",
+       "data": [
+        "{{m:gross_margin@TTM}}",
+        "{{m:peer.AVGO.gross_margin}}",
+        "{{m:peer.CRDO.gross_margin}}"
+       ]
+      }
+     ]
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "bridge",
+   "part": "part2",
+   "sections": [
+    "2.6"
+   ],
+   "layout": "chart",
+   "kicker": "Part 2 · Earnings quality",
+   "title": "Strip out the divestiture gain and FY2026 profit looks very different",
+   "charts": [
+    {
+     "kind": "waterfall",
+     "title": "Net income bridge, FY2026, $ millions",
+     "unit": "money_m",
+     "steps": [
+      {
+       "label": "Reported net income",
+       "value": "{{m:net_income@FY2026}}",
+       "total": true
+      },
+      {
+       "label": "Less divestiture gain",
+       "value": -1830.4
+      },
+      {
+       "label": "Add amortization",
+       "value": "{{m:amort_intangibles@FY2026}}"
+      },
+      {
+       "label": "Adjusted",
+       "total": true
+      }
+     ],
+     "source": "Form 10-K",
+     "refs": [
+      "S1"
+     ]
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "fin",
+   "part": "appendix",
+   "sections": [
+    "2.1"
+   ],
+   "layout": "table",
+   "kicker": "Appendix · Financial summary",
+   "title": "Five years of the numbers that matter",
+   "table": {
+    "from": "financials"
+   }
+  },
+  {
+   "id": "p3",
+   "part": "part3",
+   "layout": "divider",
+   "kicker": "Part 3",
+   "title": "Competitors and owners"
+  },
+  {
+   "id": "peers",
+   "part": "part3",
+   "sections": [
+    "3.1"
+   ],
+   "layout": "text-table",
+   "kicker": "Part 3 · Peers",
+   "title": "Marvell grows fast but earns less than Broadcom",
+   "bullets": [
+    "Placeholder note one.",
+    "Placeholder note two."
+   ],
+   "table": {
+    "from": "peers",
+    "heat": true,
+    "columns": [
+     "revenue_growth",
+     "gross_margin",
+     "operating_margin",
+     "roic",
+     "pe_ttm",
+     "ev_sales_ttm"
+    ]
+   },
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "scatter",
+   "part": "part3",
+   "sections": [
+    "3.1"
+   ],
+   "layout": "chart",
+   "kicker": "Part 3 · Growth vs price",
+   "title": "The market pays more for faster growth",
+   "charts": [
+    {
+     "kind": "scatter",
+     "title": "Revenue growth vs EV/sales, TTM",
+     "from": "peers",
+     "x_metric": "revenue_growth",
+     "y_metric": "ev_sales_ttm",
+     "x_label": "Revenue growth, TTM",
+     "y_label": "EV / sales"
+    }
+   ],
+   "bullets": [
+    "Placeholder note."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "conc",
+   "part": "part3",
+   "sections": [
+    "3.2"
+   ],
+   "layout": "text-chart",
+   "kicker": "Part 3 · Customers",
+   "title": "Ten customers buy most of the output",
+   "bullets": [
+    "Placeholder note one.",
+    "Placeholder note two."
+   ],
+   "charts": [
+    {
+     "kind": "segmented-bar",
+     "title": "Revenue by customer group, FY2026",
+     "unit": "pct",
+     "of_total": true,
+     "parts": [
+      {
+       "label": "Top 10 customers",
+       "value": 0.82
+      },
+      {
+       "label": "Everyone else",
+       "value": 0.18,
+       "role": "muted"
+      }
+     ],
+     "source": "Form 10-K",
+     "refs": [
+      "S2"
+     ]
+    },
+    {
+     "kind": "area",
+     "title": "Quarterly revenue, $ millions",
+     "periods": "quarterly",
+     "series": [
+      {
+       "name": "Revenue",
+       "metric": "revenue"
+      }
+     ]
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "p4",
+   "part": "part4",
+   "layout": "divider",
+   "kicker": "Part 4",
+   "title": "What the price assumes"
+  },
+  {
+   "id": "sens",
+   "part": "part4",
+   "sections": [
+    "4.2"
+   ],
+   "layout": "table",
+   "kicker": "Part 4 · Sensitivity",
+   "title": "Value per share moves a lot with the discount rate",
+   "table": {
+    "from": "sensitivity"
+   },
+   "bullets": [
+    "WACC {{m:wacc|pct1}}.",
+    "Terminal growth {{m:terminal_growth|pct1}}."
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "scen",
+   "part": "part4",
+   "sections": [
+    "4.3"
+   ],
+   "layout": "text-table",
+   "kicker": "Part 4 · Scenarios",
+   "title": "Three cases, all below the price on these inputs",
+   "bullets": [
+    "Placeholder note."
+   ],
+   "table": {
+    "from": "scenarios"
+   },
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "ff",
+   "part": "part4",
+   "sections": [
+    "4.4"
+   ],
+   "layout": "chart",
+   "kicker": "Part 4 · Football field",
+   "title": "Most methods put fair value below the price",
+   "charts": [
+    {
+     "kind": "football-field",
+     "title": "Value per share by method, $"
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "thesis",
+   "part": "thesis",
+   "sections": [
+    "5.1"
+   ],
+   "layout": "thesis",
+   "kicker": "Thesis",
+   "title": "Own it only if custom silicon keeps compounding",
+   "paragraphs": [
+    "Placeholder paragraph one of the thesis, two or three sentences long so it fills a few lines of the column.",
+    "Placeholder paragraph two.",
+    "Placeholder paragraph three."
+   ],
+   "watchlist": [
+    {
+     "lead": "Custom revenue growth",
+     "text": "Below 20% for two quarters would break the thesis."
+    },
+    {
+     "lead": "Gross margin",
+     "text": "Under 48% would say pricing power is fading."
+    },
+    {
+     "lead": "Top customer share",
+     "text": "Above 30% of revenue raises the stakes on one relationship."
+    },
+    {
+     "lead": "SBC",
+     "text": "Above 15% of revenue."
+    }
+   ],
+   "takeaway": "Placeholder bottom line."
+  },
+  {
+   "id": "sources",
+   "part": "appendix",
+   "layout": "sources",
+   "kicker": "Appendix",
+   "title": "Sources"
+  }
+ ]
+}

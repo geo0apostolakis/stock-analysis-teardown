@@ -1,0 +1,14 @@
+{
+  "name": "stock-analysis-teardown",
+  "owner": {
+    "name": "George Apostolakis"
+  },
+  "plugins": [
+    {
+      "name": "stock-analysis-teardown",
+      "source": "./",
+      "description": "Type a ticker, get a 16:9 equity research deck as a PDF. Eight agents pull SEC data, research the business, check every number and design the slides.",
+      "version": "1.0.0"
+    }
+  ]
+}

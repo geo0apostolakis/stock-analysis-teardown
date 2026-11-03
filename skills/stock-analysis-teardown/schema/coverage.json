@@ -1,0 +1,636 @@
+{
+ "version": 1,
+ "note": "Every id must be on at least one slide (slide.sections) or listed in meta.coverage_skipped with a reason. Core ids cannot be skipped. One slide may cover several ids.",
+ "sections": [
+  {
+   "id": "0.1",
+   "part": "summary",
+   "title": "Executive summary",
+   "owner": "verifier-editor",
+   "core": true,
+   "covers": [
+    "Verdict in words, the one sentence that justifies it",
+    "Three strengths and three risks",
+    "Five headline KPIs",
+    "Business quality score from 1.12"
+   ],
+   "suggested_visuals": [
+    "exec-summary"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.1",
+   "part": "part1",
+   "title": "Business model and revenue generation",
+   "owner": "part1-business",
+   "core": true,
+   "covers": [
+    "How does the company generate revenue?",
+    "What is its business model, and how does it create value?",
+    "What are its primary revenue streams and sources of profitability?"
+   ],
+   "suggested_visuals": [
+    "text with columns (what it sells, who pays, how it earns)",
+    "sankey of the income statement"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.2",
+   "part": "part1",
+   "title": "Business segments and revenue breakdown",
+   "owner": "part1-business",
+   "core": true,
+   "covers": [
+    "Segments by product, service, customer type and geography",
+    "Revenue and profitability contribution of each segment",
+    "Core growth drivers and the most important segments"
+   ],
+   "suggested_visuals": [
+    "stacked-bar or stacked-100 of segment revenue",
+    "segmented-bar for geography or end market",
+    "text-chart"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.3",
+   "part": "part1",
+   "title": "Competitive advantage and economic moat",
+   "owner": "part1-business",
+   "core": true,
+   "covers": [
+    "Key competitive advantages",
+    "What protects the market position",
+    "Barriers to entry, switching costs, network effects, IP, scale, brand (where they apply)",
+    "Durability of the advantages"
+   ],
+   "suggested_visuals": [
+    "cards (one per moat source, each with evidence and a durability tag)"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.4",
+   "part": "part1",
+   "title": "Industry and sector analysis",
+   "owner": "part1-business",
+   "core": true,
+   "covers": [
+    "Industry structure, size and TAM",
+    "Growth prospects, maturity, cyclicality, long-term trends",
+    "Demand drivers, technology shifts, structural changes",
+    "Competitive landscape, concentration, the company's relative position"
+   ],
+   "suggested_visuals": [
+    "bar of TAM by year (sourced, vendor flag if the source sells research)",
+    "hbar of market share",
+    "text-chart"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.5",
+   "part": "part1",
+   "title": "Pricing power and customer retention",
+   "owner": "part1-business",
+   "core": true,
+   "covers": [
+    "Ability to raise prices without hurting demand",
+    "Customer price sensitivity and demand elasticity",
+    "Switching cost for customers",
+    "Retention, contract structure, recurring revenue, customer concentration"
+   ],
+   "suggested_visuals": [
+    "matrix (differentiation vs switching cost, one point per product line)",
+    "segmented-bar of customer concentration"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.6",
+   "part": "part1",
+   "title": "Products and services, lifecycle and development",
+   "owner": "part1-business",
+   "core": false,
+   "covers": [
+    "Main products and their lifecycle stage",
+    "Differentiation, adoption, demand sustainability",
+    "Upcoming launches",
+    "Effect of new products on revenue, margins and position"
+   ],
+   "suggested_visuals": [
+    "timeline of launches",
+    "table of products with lifecycle stage"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.7",
+   "part": "part1",
+   "title": "Key dependencies and operational risks",
+   "owner": "part1-strategy",
+   "core": true,
+   "covers": [
+    "Dependence on major customers, suppliers, channels, technologies, partners",
+    "Supply chain bottlenecks",
+    "Exposure to key components, IP or third-party platforms",
+    "Impact if a critical dependency breaks"
+   ],
+   "suggested_visuals": [
+    "cards (dependency, exposure, impact, mitigation)",
+    "table"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.8",
+   "part": "part1",
+   "title": "Management, board and governance",
+   "owner": "part1-strategy",
+   "core": true,
+   "covers": [
+    "Background and track record of the CEO, CFO and key executives",
+    "Board expertise and independence",
+    "Capital allocation and execution record",
+    "Insider ownership, alignment, pay incentives",
+    "Credibility, governance quality, value creation"
+   ],
+   "suggested_visuals": [
+    "cards (one per executive)",
+    "table of pay mix from the DEF 14A",
+    "KPIs for insider ownership and board independence"
+   ],
+   "data": "DEF 14A in data/filings, insiders.json"
+  },
+  {
+   "id": "1.9",
+   "part": "part1",
+   "title": "Strategic threats and competitive risks",
+   "owner": "part1-strategy",
+   "core": true,
+   "covers": [
+    "Existing competitors and new entrants",
+    "Technological disruption and obsolescence",
+    "Substitutes and changing customer preferences",
+    "Regulatory, geopolitical and industry risks",
+    "Effect on the long-term advantage"
+   ],
+   "suggested_visuals": [
+    "cards or a risk table with likelihood and impact (own view, marked basis view)"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.10",
+   "part": "part1",
+   "title": "Mergers, acquisitions and strategic investments",
+   "owner": "part1-strategy",
+   "core": false,
+   "covers": [
+    "Significant acquisitions, divestitures and investments",
+    "Strategic rationale of each",
+    "Price paid, integration, value created",
+    "Did they strengthen the position or add risk",
+    "Future acquisition strategy"
+   ],
+   "suggested_visuals": [
+    "cards (one per deal with price, year, rationale, verdict)",
+    "timeline"
+   ],
+   "data": "8-Ks in filings/index.json, 10-K business combinations note"
+  },
+  {
+   "id": "1.11",
+   "part": "part1",
+   "title": "Growth strategy and geographic expansion",
+   "owner": "part1-strategy",
+   "core": false,
+   "covers": [
+    "Where and why the company will expand",
+    "New markets, customers, products, regions",
+    "Organic versus acquired growth",
+    "Required investment, execution risk, expected benefit"
+   ],
+   "suggested_visuals": [
+    "cards",
+    "text-chart"
+   ],
+   "data": ""
+  },
+  {
+   "id": "1.12",
+   "part": "part1",
+   "title": "Overall business quality assessment",
+   "owner": "verifier-editor",
+   "core": true,
+   "covers": [
+    "Business model, advantages and long-term sustainability",
+    "Strongest attributes and biggest structural weaknesses",
+    "Durability of position and of profits and cash flows",
+    "Quality judged apart from the share price"
+   ],
+   "suggested_visuals": [
+    "scorecard (8 to 10 criteria, 1 to 5, each with a one-line reason)"
+   ],
+   "data": ""
+  },
+  {
+   "id": "2.1",
+   "part": "part2",
+   "title": "Revenue performance and growth",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Historical revenue and CAGR",
+    "Year-over-year growth and drivers",
+    "Cyclicality and inflection points",
+    "Organic versus acquisition-driven growth"
+   ],
+   "suggested_visuals": [
+    "bar of revenue with annotations at inflection points",
+    "line of quarterly revenue"
+   ],
+   "data": "series revenue, revenue_growth; values revenue_cagr; quarterly revenue"
+  },
+  {
+   "id": "2.2",
+   "part": "part2",
+   "title": "Revenue mix and growth quality",
+   "owner": "part2-financials",
+   "core": false,
+   "covers": [
+    "Revenue by segment, product, geography, end market",
+    "Recurring versus non-recurring revenue",
+    "Customer concentration and visibility",
+    "Sustainability of growth drivers"
+   ],
+   "suggested_visuals": [
+    "stacked-100",
+    "segmented-bar"
+   ],
+   "data": "10-K segment note and revenue disaggregation (extra_metrics)"
+  },
+  {
+   "id": "2.3",
+   "part": "part2",
+   "title": "Profitability and margins",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Gross profit and gross margin",
+    "Operating income and operating margin",
+    "Net income and net margin",
+    "Margin trends and drivers"
+   ],
+   "suggested_visuals": [
+    "line of gross, operating, net margin",
+    "sankey"
+   ],
+   "data": "gross_margin, operating_margin, net_margin, normalized_operating_margin"
+  },
+  {
+   "id": "2.4",
+   "part": "part2",
+   "title": "Operating expenses and operating leverage",
+   "owner": "part2-financials",
+   "core": false,
+   "covers": [
+    "R&D, SG&A, other opex",
+    "Opex as % of revenue",
+    "Revenue growth versus opex growth",
+    "Fixed-cost absorption and scalability"
+   ],
+   "suggested_visuals": [
+    "stacked-bar of opex",
+    "line of opex % revenue",
+    "bar of incremental operating margin"
+   ],
+   "data": "rnd, sga, opex_pct, core_opex_growth, incremental_operating_margin"
+  },
+  {
+   "id": "2.5",
+   "part": "part2",
+   "title": "Earnings quality and normalized profitability",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "GAAP versus adjusted earnings",
+    "One-off gains, restructuring, impairments",
+    "Acquisition amortization",
+    "SBC and dilution",
+    "Normalized, sustainable earnings"
+   ],
+   "suggested_visuals": [
+    "waterfall from GAAP to normalized",
+    "bar of SBC % revenue"
+   ],
+   "data": "normalized_operating_income, gain_on_divestiture, amort_intangibles, restructuring, sbc_pct_revenue, share_count_change"
+  },
+  {
+   "id": "2.6",
+   "part": "part2",
+   "title": "Cash flow generation and conversion",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Operating cash flow and free cash flow",
+    "Capex and FCF margin",
+    "Cash conversion, earnings to cash reconciliation",
+    "Quality and sustainability of cash"
+   ],
+   "suggested_visuals": [
+    "bar with two series (net income vs free cash flow)",
+    "line of FCF margin and FCF less SBC margin"
+   ],
+   "data": "cfo, fcf, fcf_margin, fcf_less_sbc, cfo_to_net_income, fcf_conversion"
+  },
+  {
+   "id": "2.7",
+   "part": "part2",
+   "title": "Working capital efficiency",
+   "owner": "part2-financials",
+   "core": false,
+   "covers": [
+    "Receivables and DSO",
+    "Inventory and turnover",
+    "Payables and supplier financing",
+    "Cash conversion cycle, operating working capital",
+    "Working capital needs relative to revenue"
+   ],
+   "suggested_visuals": [
+    "line of DSO, DIO, DPO and CCC"
+   ],
+   "data": "dso, dio, dpo, ccc, operating_working_capital_pct_revenue"
+  },
+  {
+   "id": "2.8",
+   "part": "part2",
+   "title": "Balance sheet quality",
+   "owner": "part2-financials",
+   "core": false,
+   "covers": [
+    "Cash and short-term investments",
+    "Receivables, inventory, other current assets",
+    "Goodwill and intangibles",
+    "Asset quality and impairment exposure",
+    "Current assets, liabilities, working capital"
+   ],
+   "suggested_visuals": [
+    "kpis-chart",
+    "stacked-bar of asset mix"
+   ],
+   "data": "cash_and_investments, goodwill_intangibles_pct_assets, current_ratio, quick_ratio"
+  },
+  {
+   "id": "2.9",
+   "part": "part2",
+   "title": "Debt, liquidity and financial risk",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Short and long-term debt",
+    "Net debt and net debt to EBITDA",
+    "Debt to equity and interest coverage",
+    "Maturity profile and refinancing",
+    "Liquidity, credit facilities, flexibility"
+   ],
+   "suggested_visuals": [
+    "maturity-ladder",
+    "kpis-chart"
+   ],
+   "data": "total_debt, net_debt, net_debt_to_ebitda, interest_coverage, debt_to_equity, debt maturities"
+  },
+  {
+   "id": "2.10",
+   "part": "part2",
+   "title": "Capital expenditure and capital intensity",
+   "owner": "part2-financials",
+   "core": false,
+   "covers": [
+    "Historical and projected capex",
+    "Capex % of revenue",
+    "Maintenance versus growth capex where estimable",
+    "Depreciation and amortization",
+    "Capital needed for future growth"
+   ],
+   "suggested_visuals": [
+    "bar of capex",
+    "line of capex % revenue and capex to depreciation"
+   ],
+   "data": "capex, capex_pct_revenue, capex_to_depreciation, dna"
+  },
+  {
+   "id": "2.11",
+   "part": "part2",
+   "title": "Capital allocation",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Organic investment versus acquisitions",
+    "M&A strategy and returns",
+    "Buybacks and dividends",
+    "Debt repayment and financing",
+    "Dilution and discipline"
+   ],
+   "suggested_visuals": [
+    "stacked-bar of uses of cash (acquisitions, buybacks, dividends, debt repaid)",
+    "KPIs of cumulative totals"
+   ],
+   "data": "cum_* values, buybacks, dividends_paid, acquisitions, debt_repaid, shares_diluted"
+  },
+  {
+   "id": "2.12",
+   "part": "part2",
+   "title": "Returns on capital and shareholder performance",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "ROIC",
+    "ROE",
+    "ROA where relevant",
+    "Diluted EPS and EPS growth",
+    "Share count and per-share value",
+    "Returns against the cost of capital"
+   ],
+   "suggested_visuals": [
+    "line of ROIC and ROIC normalized against WACC as a reference line",
+    "bar of diluted EPS"
+   ],
+   "data": "roic, roic_normalized, roe, roa, eps_diluted, shares_diluted, wacc"
+  },
+  {
+   "id": "2.13",
+   "part": "part2",
+   "title": "Financial peer benchmarking",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Growth and margins",
+    "Cash generation and capital efficiency",
+    "Leverage and liquidity",
+    "Valuation multiples",
+    "Business model and accounting differences"
+   ],
+   "suggested_visuals": [
+    "table from peers with heat",
+    "scatter growth vs EV/sales"
+   ],
+   "data": "peers.json"
+  },
+  {
+   "id": "2.14",
+   "part": "part2",
+   "title": "Financial outlook and key takeaways",
+   "owner": "part2-financials",
+   "core": true,
+   "covers": [
+    "Historical inflection points",
+    "Main strengths and weaknesses",
+    "Key drivers and risks",
+    "Sustainability of growth, margins, cash flow",
+    "What it means for forecasting and valuation"
+   ],
+   "suggested_visuals": [
+    "cards or text with two columns"
+   ],
+   "data": ""
+  },
+  {
+   "id": "3.1",
+   "part": "part3",
+   "title": "Competitor analysis (playbook 1.13)",
+   "owner": "part3-competition",
+   "core": true,
+   "covers": [
+    "Competitive positioning: product quality, features, pricing, value versus main competitors",
+    "Pricing power: which competitors can raise prices without losing customers",
+    "Competitive exposure by product, customer segment and geography",
+    "Recent developments: competitor M&A, partnerships",
+    "Competitive threats to share, profitability and growth"
+   ],
+   "suggested_visuals": [
+    "table comparing products (sourced)",
+    "matrix",
+    "cards per competitor"
+   ],
+   "data": ""
+  },
+  {
+   "id": "3.2",
+   "part": "part3",
+   "title": "Ownership and insider activity (playbook 1.14)",
+   "owner": "part3-competition",
+   "core": true,
+   "covers": [
+    "Institutional ownership: major holders and changes",
+    "Insider ownership and significant purchases or sales",
+    "Buybacks: size, rationale, effect on value"
+   ],
+   "suggested_visuals": [
+    "table of top holders (sourced, with date)",
+    "KPIs from insiders.json",
+    "bar of buybacks"
+   ],
+   "data": "insiders.json, DEF 14A beneficial ownership table, buybacks series"
+  },
+  {
+   "id": "3.3",
+   "part": "part3",
+   "title": "Competitive pressures and brand strength (playbook 1.15)",
+   "owner": "part3-competition",
+   "core": false,
+   "covers": [
+    "External pressures: competitive, regulatory, government",
+    "Brand strength and customer loyalty",
+    "Credible customer surveys and independent studies against competitors"
+   ],
+   "suggested_visuals": [
+    "cards",
+    "text-table"
+   ],
+   "data": ""
+  },
+  {
+   "id": "4.1",
+   "part": "part4",
+   "title": "Multiples versus peers and own history",
+   "owner": "part4-valuation",
+   "core": true,
+   "covers": [
+    "P/E, EV/EBITDA, EV/sales, P/FCF, FCF yield against peer medians",
+    "Same multiples against the company's own 5-year range"
+   ],
+   "suggested_visuals": [
+    "table",
+    "line of own EV/sales history",
+    "hbar of one multiple across peers"
+   ],
+   "data": "values pe_ttm, ev_ebitda_ttm, ev_sales_ttm, p_fcf_ttm, *_hist_avg, peer_median.*"
+  },
+  {
+   "id": "4.2",
+   "part": "part4",
+   "title": "DCF scenarios and sensitivity",
+   "owner": "part4-valuation",
+   "core": true,
+   "covers": [
+    "Bear, base, bull assumptions with reasons",
+    "Value per share in each case and the probability-weighted value",
+    "WACC and terminal growth sensitivity"
+   ],
+   "suggested_visuals": [
+    "table from scenarios",
+    "table from sensitivity"
+   ],
+   "data": "valuation.json"
+  },
+  {
+   "id": "4.3",
+   "part": "part4",
+   "title": "Reverse DCF: what the price assumes",
+   "owner": "part4-valuation",
+   "core": true,
+   "covers": [
+    "Owner FCF growth and revenue growth the current price implies",
+    "Whether that is plausible against history, guidance and the industry"
+   ],
+   "suggested_visuals": [
+    "kpis-chart",
+    "text"
+   ],
+   "data": "reverse_dcf_owner_fcf_cagr, reverse_dcf_revenue_cagr"
+  },
+  {
+   "id": "4.4",
+   "part": "part4",
+   "title": "Valuation summary (football field)",
+   "owner": "part4-valuation",
+   "core": true,
+   "covers": [
+    "All methods on one chart against the price",
+    "Where the price sits and what has to go right"
+   ],
+   "suggested_visuals": [
+    "football-field"
+   ],
+   "data": "valuation.json football_field"
+  },
+  {
+   "id": "5.1",
+   "part": "thesis",
+   "title": "Thesis and what would change my mind",
+   "owner": "verifier-editor",
+   "core": true,
+   "covers": [
+    "The investment case in three short paragraphs",
+    "Four to six measurable signposts that would change the view"
+   ],
+   "suggested_visuals": [
+    "thesis"
+   ],
+   "data": ""
+  }
+ ]
+}

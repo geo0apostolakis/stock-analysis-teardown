@@ -1,0 +1,14 @@
+{
+  "name": "stock-analysis-teardown-renderer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Turns a resolved teardown deck into a 16:9 PDF with server-rendered SVG charts and headless Chrome.",
+  "scripts": {
+    "render": "node render.mjs"
+  },
+  "dependencies": {
+    "echarts": "^5.6.0"
+  },
+  "license": "MIT"
+}

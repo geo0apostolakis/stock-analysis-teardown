@@ -1,0 +1,678 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stock-analysis-teardown/deck.schema.json",
+  "title": "Teardown deck",
+  "description": "Contract between the analyst agents (parts/*.json hold a list of slides plus sources), the verifier-editor (writes deck.json) and the designer (renders it). Text fields may contain number tokens {{m:KEY|FORMAT}} that prepare.py fills from metrics.json. Numeric chart fields may be a token string such as \"{{m:revenue@FY2026}}\" and get the raw number.",
+  "type": "object",
+  "required": [
+    "meta",
+    "sources",
+    "slides"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": [
+        "ticker",
+        "company",
+        "as_of",
+        "verdict",
+        "verdict_line"
+      ],
+      "properties": {
+        "ticker": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string",
+          "description": "Common name, e.g. Marvell Technology"
+        },
+        "exchange": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string",
+          "description": "YYYY-MM-DD, the price date"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "verdict": {
+          "type": "string",
+          "description": "Two to five words, e.g. Constructive but conditional. Never Buy/Sell/Hold."
+        },
+        "verdict_line": {
+          "type": "string",
+          "description": "One sentence that justifies the verdict."
+        },
+        "quality_score": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "data_confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "fiscal_note": {
+          "type": "string",
+          "description": "How the fiscal year maps to the calendar."
+        },
+        "coverage_skipped": {
+          "type": "array",
+          "description": "Playbook ids left out on purpose, each with a reason (see schema/coverage.json). Core ids cannot be skipped.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "reason"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "inline_refs": {
+          "type": "boolean",
+          "description": "Print source markers next to each claim. Off by default; refs print in the slide footer."
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "url"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^S[0-9]+$"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "filing",
+              "company",
+              "transcript",
+              "data",
+              "industry",
+              "press",
+              "analysis",
+              "other"
+            ]
+          },
+          "vendor": {
+            "type": "boolean",
+            "description": "true when the source sells something related (vendor-published)"
+          }
+        }
+      }
+    },
+    "slides": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/slide"
+      }
+    }
+  },
+  "$defs": {
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^S[0-9]+$"
+      }
+    },
+    "bullet": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "required": [
+            "text"
+          ],
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "lead": {
+              "type": "string",
+              "description": "Bold lead-in rendered before the text, e.g. 'Switching costs.'"
+            },
+            "refs": {
+              "$ref": "#/$defs/refs"
+            },
+            "sub": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "basis": {
+              "enum": [
+                "view"
+              ],
+              "description": "Set to 'view' when the number or claim is the teardown's own judgment, threshold or assumption rather than a sourced fact. Counts as a source for check_numbers.py; the reader sees it as the teardown's view."
+            }
+          }
+        }
+      ]
+    },
+    "kpi": {
+      "type": "object",
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "sub": {
+          "type": "string"
+        },
+        "tone": {
+          "enum": [
+            "neutral",
+            "good",
+            "bad"
+          ]
+        },
+        "refs": {
+          "$ref": "#/$defs/refs"
+        },
+        "basis": {
+          "enum": [
+            "view"
+          ],
+          "description": "Set to 'view' when the number or claim is the teardown's own judgment, threshold or assumption rather than a sourced fact. Counts as a source for check_numbers.py; the reader sees it as the teardown's view."
+        }
+      }
+    },
+    "series": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "metric": {
+          "type": "string",
+          "description": "series key in metrics.json, e.g. revenue, gross_margin"
+        },
+        "data": {
+          "type": "array",
+          "description": "literal values (or token strings) aligned with categories"
+        },
+        "role": {
+          "enum": [
+            "primary",
+            "secondary",
+            "tertiary",
+            "muted",
+            "positive",
+            "negative"
+          ]
+        },
+        "stack": {
+          "type": "string"
+        }
+      }
+    },
+    "chart": {
+      "type": "object",
+      "required": [
+        "kind",
+        "title"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "bar",
+            "stacked-bar",
+            "stacked-100",
+            "line",
+            "area",
+            "hbar",
+            "waterfall",
+            "sankey",
+            "scatter",
+            "football-field",
+            "maturity-ladder",
+            "price",
+            "segmented-bar"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "unit": {
+          "enum": [
+            "money_m",
+            "pct",
+            "x",
+            "ps",
+            "days",
+            "num",
+            "ratio",
+            "shares_m"
+          ]
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "periods": {
+          "type": "string",
+          "description": "display (default), all, quarterly"
+        },
+        "series": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/series"
+          }
+        },
+        "from": {
+          "type": "string",
+          "description": "income_statement, valuation, debt_maturities, market, peers"
+        },
+        "period": {
+          "type": "string"
+        },
+        "steps": {
+          "type": "array",
+          "description": "waterfall steps {label, value, total?}"
+        },
+        "points": {
+          "type": "array",
+          "description": "scatter points {label, x, y, highlight?}"
+        },
+        "x_label": {
+          "type": "string"
+        },
+        "y_label": {
+          "type": "string"
+        },
+        "x_metric": {
+          "type": "string"
+        },
+        "y_metric": {
+          "type": "string"
+        },
+        "events": {
+          "type": "array",
+          "description": "price chart markers {date, label}"
+        },
+        "annotations": {
+          "type": "array",
+          "description": "{at: category, text}"
+        },
+        "highlight": {
+          "type": "string",
+          "description": "category or ticker to emphasise"
+        },
+        "source": {
+          "type": "string",
+          "description": "short source line printed under the chart"
+        },
+        "refs": {
+          "$ref": "#/$defs/refs"
+        }
+      }
+    },
+    "table": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "peers, financials, sensitivity, scenarios"
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rows": {
+          "type": "array"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "for from=financials, the series keys"
+        },
+        "highlight_row": {
+          "type": "integer"
+        },
+        "heat": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        },
+        "refs": {
+          "$ref": "#/$defs/refs"
+        },
+        "col_align": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "left",
+              "right",
+              "center"
+            ]
+          },
+          "description": "Per-column alignment. Default is automatic: mostly-text columns align left and wrap."
+        }
+      }
+    },
+    "slide": {
+      "type": "object",
+      "required": [
+        "id",
+        "layout",
+        "title"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "part": {
+          "enum": [
+            "cover",
+            "summary",
+            "part1",
+            "part2",
+            "part3",
+            "part4",
+            "thesis",
+            "appendix"
+          ]
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "playbook ids covered, see references/coverage-map.md"
+        },
+        "layout": {
+          "enum": [
+            "cover",
+            "roadmap",
+            "divider",
+            "exec-summary",
+            "text",
+            "text-chart",
+            "chart",
+            "two-charts",
+            "kpis-chart",
+            "table",
+            "text-table",
+            "cards",
+            "matrix",
+            "timeline",
+            "scorecard",
+            "thesis",
+            "sources",
+            "disclaimer"
+          ]
+        },
+        "kicker": {
+          "type": "string",
+          "description": "small label above the title, e.g. Part 2 . Cash flow"
+        },
+        "title": {
+          "type": "string",
+          "description": "Action title: one full sentence that states the takeaway."
+        },
+        "lead": {
+          "type": "string"
+        },
+        "bullets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bullet"
+          }
+        },
+        "columns": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "heading": {
+                "type": "string"
+              },
+              "bullets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/bullet"
+                }
+              }
+            }
+          }
+        },
+        "kpis": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/kpi"
+          }
+        },
+        "charts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/chart"
+          }
+        },
+        "chart_side": {
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "table": {
+          "$ref": "#/$defs/table"
+        },
+        "cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "facts": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "refs": {
+                "$ref": "#/$defs/refs"
+              },
+              "basis": {
+                "enum": [
+                  "view"
+                ],
+                "description": "Set to 'view' when the number or claim is the teardown's own judgment, threshold or assumption rather than a sourced fact. Counts as a source for check_numbers.py; the reader sees it as the teardown's view."
+              }
+            }
+          }
+        },
+        "matrix": {
+          "type": "object",
+          "properties": {
+            "x_label": {
+              "type": "string"
+            },
+            "y_label": {
+              "type": "string"
+            },
+            "x_ends": {
+              "type": "array"
+            },
+            "y_ends": {
+              "type": "array"
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "string"
+                  },
+                  "x": {
+                    "type": "number"
+                  },
+                  "y": {
+                    "type": "number"
+                  },
+                  "note": {
+                    "type": "string"
+                  },
+                  "highlight": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              },
+              "refs": {
+                "$ref": "#/$defs/refs"
+              },
+              "basis": {
+                "enum": [
+                  "view"
+                ],
+                "description": "Set to 'view' when the number or claim is the teardown's own judgment, threshold or assumption rather than a sourced fact. Counts as a source for check_numbers.py; the reader sees it as the teardown's view."
+              }
+            }
+          }
+        },
+        "scorecard": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "criterion": {
+                "type": "string"
+              },
+              "score": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "comment": {
+                "type": "string"
+              },
+              "refs": {
+                "$ref": "#/$defs/refs"
+              },
+              "basis": {
+                "enum": [
+                  "view"
+                ],
+                "description": "Set to 'view' when the number or claim is the teardown's own judgment, threshold or assumption rather than a sourced fact. Counts as a source for check_numbers.py; the reader sees it as the teardown's view."
+              }
+            }
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bullet"
+          }
+        },
+        "risks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bullet"
+          }
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bullet"
+          }
+        },
+        "watchlist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/bullet"
+          },
+          "description": "'What would change my mind' items. Numbers here are thresholds, treated as the teardown's view."
+        },
+        "takeaway": {
+          "type": "string",
+          "description": "Bottom-line sentence; the template prints the 'Bottom line' label."
+        },
+        "refs": {
+          "$ref": "#/$defs/refs"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Not rendered. Reasoning, caveats, what was checked."
+        }
+      }
+    }
+  }
+}
