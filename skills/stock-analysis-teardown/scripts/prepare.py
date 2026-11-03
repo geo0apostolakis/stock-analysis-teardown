@@ -448,11 +448,13 @@ def resolve_table(t, ctx, where):
         header = ["WACC \\ terminal growth"] + [fmt(g, "pct", "pct1") for g in sens["terminal_growth"]]
         rows, heat = [], []
         for w, row in zip(sens["wacc"], sens["per_share"]):
-            rows.append([fmt(w, "pct", "pct1")] + [fmt(x, "ps", "ps0", sym=psym) if x else "n/a" for x in row])
+            rows.append([fmt(w, "pct", "pct1")] + [fmt(x, "ps", "ps0", sym=psym) if x is not None else "n/a" for x in row])
             heat.append([None] + row)
         t.update({"header": header, "rows": rows, "heat_values": heat, "col_align": ["left"] + ["right"] * len(sens["terminal_growth"]),
                   "center_cell": [2, 3]})
-        t.setdefault("note", f"Base-case value per share. Current price {fmt(ctx.val.get('price'), 'ps', sym=psym)}.")
+        wiped = any(x == 0 for r in sens["per_share"] for x in r)
+        t.setdefault("note", f"Base-case value per share. Current price {fmt(ctx.val.get('price'), 'ps', sym=psym)}."
+                     + (" $0 means debt exceeds the business value, so the equity is wiped out." if wiped else ""))
     elif src == "scenarios":
         sc = ctx.val.get("scenarios") or {}
         psym = currency_symbol(ctx.meta.get("price_currency") or ctx.meta.get("currency"))
@@ -463,7 +465,8 @@ def resolve_table(t, ctx, where):
             if not s:
                 continue
             rows.append([n.capitalize(), fmt(s.get("probability"), "pct", "pct"), fmt(s["revenue_cagr_10y"], "pct", "pct1"),
-                         fmt(s["year10_fcf_margin"], "pct", "pct1"), fmt(s["per_share"], "ps", sym=psym),
+                         fmt(s["year10_fcf_margin"], "pct", "pct1"),
+                         f"{fmt(0, 'ps', 'ps0', sym=psym)}, wiped out" if s.get("equity_wiped_out") else fmt(s["per_share"], "ps", sym=psym),
                          fmt(s["upside"], "pct", "pct+")])
         t.update({"header": header, "rows": rows, "col_align": ["left"] + ["right"] * 5})
     else:

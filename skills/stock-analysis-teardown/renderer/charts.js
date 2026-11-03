@@ -472,10 +472,14 @@ function optFootball(ch, w, h) {
   const label = (pos, key) => ({ show: true, position: pos, color: THEME.ink, fontSize: 13, fontWeight: 500, fontFamily: THEME.font,
     formatter: (p) => fmtNum(bars[p.dataIndex][key], 'ps', ch.sym, true) });
   const colorOf = (b) => kindColor[b.kind] || THEME.roles.primary;
+  // A range that starts close to $0 leaves no room left of the bar for its low label, which then
+  // runs into the category name. Those labels go inside the bar's left end instead.
+  const top = Math.max(...bars.map(hi), 0) || 1;
+  const tight = (b) => lo(b) >= 0 && lo(b) < 0.08 * top;
   o.series = [
     { type: 'bar', stack: 'ff', data: bars.map((b) => (lo(b) >= 0 ? lo(b) : 0)), itemStyle: { color: 'transparent' }, silent: true, barMaxWidth: 22,
       label: { ...label('insideRight', 'low'), color: THEME.ink2, fontWeight: 400,
-        formatter: (p) => (lo(bars[p.dataIndex]) >= 0 ? fmtNum(bars[p.dataIndex].low, 'ps', ch.sym, true) : '') } },
+        formatter: (p) => (lo(bars[p.dataIndex]) >= 0 && !tight(bars[p.dataIndex]) ? fmtNum(bars[p.dataIndex].low, 'ps', ch.sym, true) : '') } },
     { type: 'bar', stack: 'ff', barMaxWidth: 22,
       data: bars.map((b) => (lo(b) < 0 ? { value: lo(b), itemStyle: { color: colorOf(b), borderRadius: [4, 0, 0, 4] } } : null)),
       label: { ...label('left', 'low'), color: THEME.ink2, fontWeight: 400 } },
@@ -488,6 +492,12 @@ function optFootball(ch, w, h) {
         data: [{ xAxis: ch.price }],
       } : undefined },
   ];
+  const tightLows = bars.filter(tight).map((b) => [lo(b), b.label]);
+  if (tightLows.length) {
+    o.series.push({ type: 'scatter', data: tightLows, symbolSize: 0, silent: true, z: 6,
+      label: { show: true, position: 'right', distance: 6, color: THEME.paper, fontSize: 13, fontWeight: 600, fontFamily: THEME.font,
+        formatter: (p) => fmtNum(p.value[0], 'ps', ch.sym, true) } });
+  }
   const mids = bars.map((b) => (b.mid ? [b.mid, b.label] : null)).filter(Boolean);
   if (mids.length) {
     o.series.push({ type: 'scatter', data: mids, symbol: 'circle', symbolSize: 10, z: 5,

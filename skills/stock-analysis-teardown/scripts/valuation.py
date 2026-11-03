@@ -5,10 +5,20 @@ usage:
   valuation.py init RUN_DIR     write data/valuation_inputs.json pre-filled from metrics (the agent edits it)
   valuation.py run  RUN_DIR     compute data/valuation.json and add valuation tokens to metrics.json
 
-Cash flow definition. The DCF discounts owner free cash flow = operating cash flow - capex -
-stock-based compensation. SBC is treated as a real cost because it is paid in shares.
+Cash flow definition. Scenario margins are owner free cash flow = operating cash flow - capex -
+stock-based compensation, as a share of revenue. SBC is treated as a real cost because it is
+paid in shares. Operating cash flow is after interest paid, so before discounting at the WACC
+the script adds back after-tax interest (cost of debt x debt x (1 - tax)) to get free cash flow
+to the firm. Without that, interest would be counted twice: once in the cash flow and again
+when debt is subtracted from enterprise value. Debt is held at its latest level unless the
+inputs give `debt_path_m` (10 yearly balances) for a company that will borrow to build.
 Scenario inputs are yearly revenue growth and owner-FCF margin paths (10 years; a shorter
 list repeats its last value). Discounting is end of year. Terminal value is Gordon growth.
+
+Equity floor. A shareholder cannot lose more than 100%. When a scenario's enterprise value is
+below net debt, the equity is wiped out: the per-share value is floored at zero, the raw
+negative residual is kept as `per_share_raw`, and the probability-weighted value uses the
+floored numbers.
 
 Cost of equity = risk-free + adjusted beta x equity risk premium.
 Adjusted beta = 0.67 x raw beta + 0.33 (Blume), raw beta from fetch_market.py.
@@ -59,7 +69,8 @@ def init(run_dir):
     tg = 0.03
     inputs = {
         "_read_me": "Edit every number and write the reason next to it. Growth and margins are fractions. "
-                    "Margins are owner FCF (CFO - capex - SBC) / revenue. Lists cover years 1-10; a short list repeats its last value.",
+                    "Margins are owner FCF (CFO - capex - SBC) / revenue, after interest; the script adds after-tax interest back "
+                    "before discounting at WACC. Lists cover years 1-10; a short list repeats its last value.",
         "erp": 0.05, "erp_reason": "Long-run US equity risk premium assumption (Damodaran's implied ERP has ranged roughly 4-6%).",
         "beta_override": None, "beta_reason": "Leave null to use the adjusted 5-year weekly beta.",
         "extra_shares_m": 0, "extra_shares_reason": "Millions of shares to count on top of common, such as convertible "
@@ -71,6 +82,8 @@ def init(run_dir):
                         "its newest loan or bond, or the straight-debt yield of its converts. Leave null to use "
                         "historical interest / debt, which stops the run if it is below the risk-free rate.",
         "tax_rate": 0.21,
+        "debt_path_m": None, "debt_path_reason": "Leave null to hold debt at its latest level for the interest add-back. "
+                        "Give 10 yearly balances ($M) when the company will borrow to fund a build.",
         "scenarios": {
             "bear": {"probability": 0.25, "revenue_growth": [round(x, 4) for x in fade(g0 * 0.4, tg)],
                      "fcf_margin": [round(x, 4) for x in fade(m_now, m_now * 0.8)],
@@ -96,11 +109,13 @@ def init(run_dir):
     print(out)
 
 
-def dcf(rev0, growth, margin, wacc, g, years=YEARS):
+def dcf(rev0, growth, margin, wacc, g, years=YEARS, addback=None):
+    """addback: after-tax interest per year (millions) added to owner FCF to get FCF to the firm."""
     rev, pv, rows = rev0, 0.0, []
+    addback = addback or [0.0] * years
     for t in range(1, years + 1):
         rev = rev * (1 + growth[t - 1])
-        fcf = rev * margin[t - 1]
+        fcf = rev * margin[t - 1] + addback[t - 1]
         disc = (1 + wacc) ** t
         pv += fcf / disc
         rows.append({"year": t, "revenue": rev, "fcf": fcf, "pv": fcf / disc})
@@ -186,17 +201,26 @@ def run(run_dir):
     if ev_now and extra:
         ev_now = ev_now + extra * px_rep   # same share basis as the per-share values
 
-    def per_share(ev):
+    def per_share_raw(ev):
         return (ev - net_debt) / shares * fx * adr if shares else None
+
+    def per_share(ev):
+        # a shareholder's loss stops at 100%: equity worth less than nothing is worth nothing
+        v = per_share_raw(ev)
+        return max(v, 0.0) if v is not None else None
+
+    debt_path = path(inp.get("debt_path_m") or [debt])
+    addback = [kd * d * (1 - t) for d in debt_path]
 
     scen_out = {}
     for name, sc in inp["scenarios"].items():
         gr, mg = path(sc["revenue_growth"]), path(sc["fcf_margin"])
-        ev, rows, pv_tv = dcf(rev0, gr, mg, wacc, g)
-        ps = per_share(ev)
+        ev, rows, pv_tv = dcf(rev0, gr, mg, wacc, g, addback=addback)
+        ps, raw = per_share(ev), per_share_raw(ev)
         scen_out[name] = {"probability": sc.get("probability"), "narrative": sc.get("narrative"), "ev": ev,
-                          "equity_value": ev - net_debt, "per_share": ps,
-                          "upside": (ps / price - 1) if ps and price else None,
+                          "equity_value": ev - net_debt, "per_share": ps, "per_share_raw": raw,
+                          "equity_wiped_out": raw is not None and raw < 0,
+                          "upside": (ps / price - 1) if ps is not None and price else None,
                           "terminal_value_share_of_ev": pv_tv / ev if ev else None,
                           "revenue_cagr_10y": (rows[-1]["revenue"] / rev0) ** (1 / YEARS) - 1,
                           "year10_revenue": rows[-1]["revenue"], "year10_fcf_margin": mg[-1], "projection": rows,
@@ -208,7 +232,9 @@ def run(run_dir):
     sens = None
     if "base" in inp["scenarios"]:
         b = inp["scenarios"]["base"]
-        ws = [round(wacc + d, 4) for d in (-0.01, -0.005, 0, 0.005, 0.01)]
+        # not rounded: a row label must print the same as the WACC token on the slide (10.75% rounded
+        # first prints 10.8% in the table while the unrounded 10.749% prints 10.7% in the text)
+        ws = [wacc + d for d in (-0.01, -0.005, 0, 0.005, 0.01)]
         gs = [round(g + d, 4) for d in (-0.01, -0.005, 0, 0.005, 0.01)]
         grid = []
         for w in ws:
@@ -217,7 +243,7 @@ def run(run_dir):
                 if w <= gg + 0.005:
                     row.append(None)
                 else:
-                    ev, _, _ = dcf(rev0, path(b["revenue_growth"]), path(b["fcf_margin"]), w, gg)
+                    ev, _, _ = dcf(rev0, path(b["revenue_growth"]), path(b["fcf_margin"]), w, gg, addback=addback)
                     row.append(per_share(ev))
             grid.append(row)
         sens = {"wacc": ws, "terminal_growth": gs, "per_share": grid}
@@ -227,9 +253,10 @@ def run(run_dir):
     fcf_ttm = V(m, "fcf@TTM")
     sbc_ttm = V(m, "sbc@TTM") or 0.0
     owner = (fcf_ttm - sbc_ttm) if fcf_ttm is not None else None
-    if ev_now and owner and owner > 0:
+    firm_fcf = owner + addback[0] if owner is not None else None
+    if ev_now and firm_fcf and firm_fcf > 0:
         def ev_for_growth(x):
-            v, fcf = 0.0, owner
+            v, fcf = 0.0, firm_fcf
             for yr in range(1, YEARS + 1):
                 fcf *= (1 + x)
                 v += fcf / (1 + wacc) ** yr
@@ -241,7 +268,7 @@ def run(run_dir):
     if ev_now and tm and rev0:
         m0 = owner / rev0 if owner is not None else tm
         def ev_for_rev_growth(x):
-            ev, _, _ = dcf(rev0, [x] * YEARS, fade(m0, tm), wacc, g)
+            ev, _, _ = dcf(rev0, [x] * YEARS, fade(m0, tm), wacc, g, addback=addback)
             return ev
         x = solve(ev_for_rev_growth, ev_now, -0.3, 1.5)
         rev_out["implied_revenue_cagr"] = x
@@ -296,7 +323,9 @@ def run(run_dir):
         "scenarios": scen_out, "probability_weighted_per_share": weighted,
         "probability_weighted_upside": (weighted / price - 1) if weighted and price else None,
         "sensitivity": sens, "reverse_dcf": rev_out, "football_field": ff,
-        "method": "Owner FCF (CFO - capex - SBC) DCF, 10 years, end-of-year discounting, Gordon terminal value.",
+        "interest_addback": addback, "debt_path": debt_path,
+        "method": "FCF to the firm (owner FCF = CFO - capex - SBC, plus after-tax interest) discounted at WACC, 10 years, "
+                  "end-of-year discounting, Gordon terminal value, less net debt; per-share value floored at zero.",
     }
     write_json(os.path.join(data, "valuation.json"), out)
 
@@ -308,6 +337,10 @@ def run(run_dir):
     put("wacc", wacc, "pct", "Weighted average cost of capital")
     put("cost_of_equity", ke, "pct", "Cost of equity (CAPM)")
     put("cost_of_debt", kd, "pct", "Pre-tax cost of debt")
+    put("cost_of_debt_after_tax", kd * (1 - t), "pct", "After-tax cost of debt")
+    put("wacc_equity_weight", E / (E + D) if E + D else None, "pct", "Equity weight in WACC (market cap)")
+    put("wacc_debt_weight", D / (E + D) if E + D else None, "pct", "Debt weight in WACC (latest total debt)")
+    put("interest_addback_y1", addback[0], "money_m", "After-tax interest added back to owner FCF, year 1")
     if raw_beta is not None:
         put("beta_adjusted", 0.67 * raw_beta + 0.33, "ratio", "Adjusted beta (Blume: 0.67 x raw + 0.33)")
     put("beta_used", beta, "ratio", "Beta used in cost of equity" + (" (override)" if inp.get("beta_override") else ""))
@@ -315,6 +348,7 @@ def run(run_dir):
     put("terminal_growth", g, "pct", "Terminal growth rate")
     for n, s in scen_out.items():
         put(f"dcf_{n}_per_share", s["per_share"], "ps", f"DCF value per share, {n} case", pc)
+        put(f"dcf_{n}_per_share_raw", s["per_share_raw"], "ps", f"DCF equity residual per share before the zero floor, {n} case", pc)
         put(f"dcf_{n}_upside", s["upside"], "pct", f"DCF {n} case vs current price")
         put(f"dcf_{n}_revenue_cagr", s["revenue_cagr_10y"], "pct", f"10-year revenue CAGR assumed, {n} case")
         put(f"dcf_{n}_fcf_margin_y10", s["year10_fcf_margin"], "pct", f"Year-10 owner FCF margin assumed, {n} case")
@@ -330,7 +364,8 @@ def run(run_dir):
     write_json(os.path.join(data, "metrics.json"), m)
     update_run(run_dir, phases={"valuation_model": "done"})
     log(json.dumps({"wacc": round(wacc, 4), "ke": round(ke, 4), "beta": round(beta, 2),
-                    "per_share": {n: round(s["per_share"], 2) if s["per_share"] else None for n, s in scen_out.items()},
+                    "per_share": {n: round(s["per_share"], 2) if s["per_share"] is not None else None for n, s in scen_out.items()},
+                    "per_share_raw": {n: round(s["per_share_raw"], 2) if s["per_share_raw"] is not None else None for n, s in scen_out.items()},
                     "weighted": round(weighted, 2) if weighted else None, "price": price,
                     "reverse": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in rev_out.items()}}))
 
