@@ -51,7 +51,8 @@ def fmt(v, unit="num", spec=None, sym="$"):
         if a >= 1_000_000:
             return f"{s}{sym}{a / 1_000_000:,.1f}T"
         if a >= 1000:
-            return f"{s}{sym}{a / 1000:,.{2 if a < 10_000 else 1}f}B".replace(".00B", "B")
+            # whole billions print without decimals ($14B, not $14.0B) so text and charts agree
+            return f"{s}{sym}{a / 1000:,.{2 if a < 10_000 else 1}f}B".replace(".00B", "B").replace(".0B", "B")
         return f"{s}{sym}{a:,.0f}M" if a >= 10 else f"{s}{sym}{a:,.1f}M"
     if spec == "money_m":
         return f"{s}{sym}{a:,.0f}M"

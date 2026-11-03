@@ -40,12 +40,12 @@ function fmtNum(v, unit = 'num', sym = '$', compact = false) {
     case 'x': return `${s}${n(a, compact || a >= 100 ? 0 : 1)}x`;
     case 'ps': return `${s}${sym}${n(a, a >= 1000 || compact ? 0 : 2)}`;
     case 'days': return `${s}${n(a, 0)}`;
-    case 'shares_m': return `${s}${n(a, 0)}M`;
+    case 'shares_m': return a === 0 ? '0' : `${s}${n(a, 0)}M`;
     case 'ratio': return `${s}${n(a, 2)}`;
     case 'money_m':
       if (a === 0) return `${sym}0`;
       if (a >= 1e6) return `${s}${sym}${n(a / 1e6, 1)}T`;
-      if (a >= 1000) return `${s}${sym}${n(a / 1000, compact ? (a >= 10000 ? 0 : 1) : (a >= 10000 ? 1 : 2))}B`.replace('.00B', 'B');
+      if (a >= 1000) return `${s}${sym}${n(a / 1000, compact ? (a >= 10000 ? 0 : 1) : (a >= 10000 ? 1 : 2))}B`.replace('.00B', 'B').replace(/\.0B$/, 'B');
       return `${s}${sym}${n(a, 0)}M`;
     default:
       if (a >= 1e6) return `${s}${n(a / 1e6, 1)}M`;
@@ -66,8 +66,13 @@ function moneyScale(nums) {
 function moneyAxisFmt(sym, nums) {
   const { div, suf } = moneyScale(nums);
   const lo = Math.min(0, ...nums), hi = Math.max(0, ...nums);
-  const step = (hi - lo) / div / 4;
-  const d = step >= 2 || step === 0 ? 0 : step >= 0.2 ? 1 : 2;
+  // decimals follow the tick step ECharts will pick (a 1, 2, 3 or 5 times a power of ten),
+  // so ticks at 2, 4, 6, 8 print as $2B, not $2.0B
+  const raw = (hi - lo) / 4 || 1;
+  const e = Math.pow(10, Math.floor(Math.log10(raw)));
+  const f = raw / e;
+  const tick = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 3 ? 3 : f <= 5 ? 5 : 10) * e / div;
+  const d = Math.abs(tick - Math.round(tick)) < 1e-9 ? 0 : Math.abs(tick * 10 - Math.round(tick * 10)) < 1e-9 ? 1 : 2;
   return (v) => {
     if (v === 0) return `${sym}0`;
     const a = Math.abs(v) / div;

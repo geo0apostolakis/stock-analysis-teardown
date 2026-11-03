@@ -69,7 +69,9 @@ When it returns, `python3 SKILL_DIR/scripts/validate.py RUN_DIR` must print PASS
 
 ## 6. Check and report
 
-Confirm the PDF exists and the page count matches (`render.mjs` prints both; `build/qa.json` has the details). Look at `RUN_DIR/build/shots/contact-sheet.png` yourself.
+Confirm the PDF exists and the page count matches (`render.mjs` prints both; `build/qa.json` has the details). Look at `RUN_DIR/build/shots/contact-sheet.png` yourself, then open every slide that has a chart (`build/shots/slide-NN.png`) at full size. The contact sheet is too small to catch a wrong chart. For each one, say in one sentence what the chart alone shows, then check it against the title, the bullets and the takeaway: same numbers, same words, same precision, and no claim the chart contradicts. Send any mismatch to the designer or the editor before you report. Each fix is a class of mistake, so check every other chart for the same thing, not just the one you found.
+
+When you hand the PDF over, the person may already have an older copy open. macOS Preview keeps an open PDF in memory and does not reload it. Close any open copy (`osascript -e 'tell application "Preview" to close every document saving no'`) before `open`, and never make extra copies of the PDF under other names.
 
 Tell the user, briefly:
 

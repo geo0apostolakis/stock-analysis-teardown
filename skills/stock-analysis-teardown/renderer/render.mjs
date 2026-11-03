@@ -98,7 +98,7 @@ function segmented(ch) {
   const color = (p, i) => ROLE_COLORS[p.role] || SEG_COLORS[i];
   const bar = parts.map((p, i) => {
     const share = p.value / total;
-    return `<span style="flex:${p.value};background:${color(p, i)}">${share >= 0.09 ? fmtNum(share, 'pct', ch.sym, true) : ''}</span>`;
+    return `<span style="flex:${p.value};background:${color(p, i)}">${share >= 0.09 ? fmtNum(share, 'pct', ch.sym) : ''}</span>`;
   }).join('');
   const legend = parts.map((p, i) => `<div style="--c:${color(p, i)}"><div class="sl">${rich(p.label)}</div>
     <div class="sv">${unit === 'pct' ? fmtNum(p.value / (ch.of_total ? 1 : total), 'pct', ch.sym) : fmtNum(p.value, unit, ch.sym)}</div></div>`).join('');

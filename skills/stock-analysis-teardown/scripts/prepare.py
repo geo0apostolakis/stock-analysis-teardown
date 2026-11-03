@@ -270,6 +270,14 @@ def waterfall_checks(ch, ctx, where):
     path = waterfall_path(steps)
     totals = [v for v, s in zip(path, steps) if s["total"]]
     low = min(path)
+    high = max(path)
+    if len(totals) >= 2 and totals[0] <= 0 and totals[-1] <= 0 and high > 0 and not (totals[0] == 0 and totals[-1] == 0):
+        at = steps[path.index(high)]["label"]
+        ctx.errors.append(
+            f"{where}: waterfall '{title}' starts and ends at or below zero but the running total "
+            f"rises to {high:,.1f} after '{at}'. That draws a profit or balance above zero that never "
+            f"existed. Reorder the steps so the running total stays at or below zero, for example by "
+            f"taking a large negative step right after the first large positive one")
     if len(totals) >= 2 and totals[0] >= 0 and totals[-1] >= 0 and low < 0:
         at = steps[path.index(low)]["label"]
         ctx.errors.append(
