@@ -66,6 +66,12 @@
     return a.left < b.right - pad && b.left < a.right - pad && a.top < b.bottom - pad && b.top < a.bottom - pad;
   }
 
+  // ECharts overflow:'break' draws each wrapped line as its own <text> under one
+  // parent <g>. Those lines share a parent; different axis ticks do not.
+  function sameWrappedLabel(a, b) {
+    return a.x.parentNode && a.x.parentNode === b.x.parentNode;
+  }
+
   // 3. Look for the things a reader would notice: clipped or overflowing text, titles that run long,
   //    charts squeezed into small boxes, labels that collide, numbers that never got filled in.
   window.__qa = function () {
@@ -121,6 +127,7 @@
           }
           for (let j = i + 1; j < rects.length; j++) {
             const b = rects[j];
+            if (sameWrappedLabel(a, b)) continue;
             if (rectsOverlap(a.r, b.r, 2)) {
               const key = a.x.textContent + '|' + b.x.textContent;
               if (seen.has(key)) continue;
